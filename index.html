@@ -366,17 +366,37 @@
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
-        // Регистрация Service Worker
+        // Регистрация Service Worker с отладкой
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
+                navigator.serviceWorker.register('/sw.js', { scope: '/' })
                     .then((registration) => {
                         console.log('SW зарегистрирован:', registration);
+                        
+                        // Проверяем активацию
+                        if (registration.active) {
+                            console.log('SW активен:', registration.active);
+                        }
+                        
+                        // Ожидаем активации
+                        if (registration.installing) {
+                            registration.installing.addEventListener('statechange', () => {
+                                if (registration.installing.state === 'activated') {
+                                    console.log('SW активирован');
+                                }
+                            });
+                        }
                     })
                     .catch((registrationError) => {
-                        console.log('Ошибка регистрации SW:', registrationError);
+                        console.error('Ошибка регистрации SW:', registrationError);
+                        
+                        // Дополнительная диагностика
+                        console.log('URL SW:', window.location.origin + '/sw.js');
+                        console.log('User Agent:', navigator.userAgent);
                     });
             });
+        } else {
+            console.warn('Service Worker не поддерживается');
         }
     </script>
     <script>

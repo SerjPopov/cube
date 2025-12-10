@@ -1,4 +1,6 @@
-const CACHE_NAME = 'cube-timer-v1';
+// Service Worker для приложения "Кубик"
+// Версия для принудительного обновления кэша
+const CACHE_NAME = 'cube-timer-v1.0.0';
 const urlsToCache = [
   '/',
   '/index.html',
