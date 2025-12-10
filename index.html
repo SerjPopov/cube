@@ -8,6 +8,24 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="72x72" href="icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="icon-96x96.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="icon-128x128.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="384x384" href="icon-384x384.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512x512.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icon-16x16.png">
+    <link rel="shortcut icon" href="icon-192x192.png">
+    
     <style>
         :root {
             --primary-color: #2563eb;
@@ -307,12 +325,18 @@
             </div>
 
             <div class="actions">
-                <button @click="connect" 
-                        :disabled="isConnecting || isConnected" 
-                        class="btn btn-primary">
-                    <span v-if="isConnecting" class="loading"></span>
-                    {{ connectButtonText }}
-                </button>
+                 <button v-if="showInstallButton" 
+                         @click="installPWA" 
+                         class="btn btn-primary">
+                     📱 Установить приложение
+                 </button>
+
+                 <button @click="connect" 
+                         :disabled="isConnecting || isConnected" 
+                         class="btn btn-primary">
+                     <span v-if="isConnecting" class="loading"></span>
+                     {{ connectButtonText }}
+                 </button>
 
                 <button @click="resetCounters" 
                         :disabled="!isConnected || isResetting" 
@@ -342,6 +366,20 @@
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
+        // Регистрация Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('SW зарегистрирован:', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('Ошибка регистрации SW:', registrationError);
+                    });
+            });
+        }
+    </script>
+    <script>
         const { createApp } = Vue;
 
         createApp({
@@ -370,9 +408,13 @@
                     SERVICE_UUID: '4FAFC201-1FB5-459E-8FCC-C5C9C331914B',
                     CHARACTERISTIC_UUID: 'BEB5483E-36E1-4688-B7F5-EA07361B26A8',
                     
-                    // Отладка
+                     // Отладка
                     debug: true,
-                    logs: []
+                    logs: [],
+                    
+                    // PWA
+                    deferredPrompt: null,
+                    showInstallButton: false
                 }
             },
             computed: {
@@ -769,6 +811,53 @@
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
                     this.log('Логи экспортированы в файл');
+                },
+
+                // Проверка и предложение установки PWA
+                checkPWAInstall() {
+                    // Проверяем, установлено ли приложение
+                    const isInstalled = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+                    
+                    if (!isInstalled && 'beforeinstallprompt' in window) {
+                        this.log('PWA может быть установлена');
+                        
+                        // Сохраняем событие для использования позже
+                        window.addEventListener('beforeinstallprompt', (e) => {
+                            e.preventDefault();
+                            this.deferredPrompt = e;
+                            this.showInstallButton = true;
+                            this.log('Событие установки PWA получено');
+                        });
+                        
+                        // Отслеживаем установку
+                        window.addEventListener('appinstalled', () => {
+                            this.showInstallButton = false;
+                            this.success = 'Приложение успешно установлено!';
+                            this.log('PWA установлена');
+                        });
+                    } else if (isInstalled) {
+                        this.log('Приложение запущено как PWA');
+                    }
+                },
+
+                // Установка PWA
+                async installPWA() {
+                    if (!this.deferredPrompt) {
+                        this.log('Событие установки недоступно');
+                        return;
+                    }
+                    
+                    this.deferredPrompt.prompt();
+                    const { outcome } = await this.deferredPrompt.userChoice;
+                    
+                    if (outcome === 'accepted') {
+                        this.log('Пользователь принял установку PWA');
+                    } else {
+                        this.log('Пользователь отклонил установку PWA');
+                    }
+                    
+                    this.deferredPrompt = null;
+                    this.showInstallButton = false;
                 }
             },
 
@@ -776,8 +865,13 @@
                 this.log('Приложение запущено', { 
                     debug: this.debug,
                     userAgent: navigator.userAgent,
-                    bluetoothSupported: !!navigator.bluetooth
+                    bluetoothSupported: !!navigator.bluetooth,
+                    isPWA: window.matchMedia('(display-mode: standalone)').matches,
+                    isInstalled: window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches
                 });
+                
+                // Проверка и предложение установить PWA
+                this.checkPWAInstall();
                 
                 // Загрузка сохраненных данных при старте
                 this.loadFromLocalStorage();
@@ -785,7 +879,12 @@
                 // Проверка поддержки Web Bluetooth
                 if (!navigator.bluetooth) {
                     this.log('Web Bluetooth не поддерживается');
-                    this.error = 'Web Bluetooth не поддерживается. Используйте Safari на iOS или Chrome на Android.';
+                    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+                    if (isIOS) {
+                        this.error = 'Web Bluetooth не поддерживается в Safari. Установите приложение как PWA или используйте Chrome на Android.';
+                    } else {
+                        this.error = 'Web Bluetooth не поддерживается. Используйте Chrome на Android или обновите браузер.';
+                    }
                 } else {
                     this.log('Web Bluetooth поддерживается');
                 }
