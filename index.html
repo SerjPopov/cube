@@ -77,6 +77,14 @@
             font-size: 16px;
         }
 
+        .version {
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+
         .status-card {
             background: var(--surface);
             border-radius: var(--radius);
@@ -288,7 +296,8 @@
         <div class="container">
             <header class="header">
                 <h1>🎲 Кубик</h1>
-                <p>Таймер времени для каждой грани 1</p>
+                <p>Таймер времени для каждой грани</p>
+                <div class="version">{{ version }}</div>
             </header>
 
             <div v-if="error" class="error">
@@ -434,7 +443,10 @@
                     
                     // PWA
                     deferredPrompt: null,
-                    showInstallButton: false
+                    showInstallButton: false,
+                    
+                    // Версия приложения
+                    version: 'v1.1.2'
                 }
             },
             computed: {
@@ -910,6 +922,22 @@
                     } else {
                         this.error = 'Web Bluetooth не поддерживается. Используйте Chrome 70+.';
                     }
+                },
+
+                // Получение версии из README.md
+                async getVersion() {
+                    try {
+                        const response = await fetch('/cube/README.md');
+                        const text = await response.text();
+                        const versionMatch = text.match(/Версия: ([0-9]+\.[0-9]+\.[0-9]+)/);
+                        if (versionMatch) {
+                            this.version = `v${versionMatch[1]}`;
+                            this.log('Версия определена из README.md', { version: this.version });
+                        }
+                    } catch (error) {
+                        this.log('Ошибка получения версии', { error: error.message });
+                        // Оставляем версию по умолчанию
+                    }
                 }
             },
 
@@ -919,8 +947,12 @@
                     userAgent: navigator.userAgent,
                     bluetoothSupported: !!navigator.bluetooth,
                     isPWA: window.matchMedia('(display-mode: standalone)').matches,
-                    isInstalled: window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches
+                    isInstalled: window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches,
+                    version: this.version
                 });
+                
+                // Получение актуальной версии
+                this.getVersion();
                 
                 // Проверка и предложение установить PWA
                 this.checkPWAInstall();
