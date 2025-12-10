@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кубик - Таймер граней</title>
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success-color: #16a34a;
+            --danger-color: #dc2626;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+            --radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        .status-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+        }
+
+        .status-dot.connected {
+            background: var(--success-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .current-face {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .faces-grid {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .face-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .face-card:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .face-card.active {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+
+        .face-name {
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .face-time {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .total-time {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .total-time-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .total-time-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 16px 24px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 52px;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--background);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #b91c1c;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: var(--danger-color);
+            padding: 12px;
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: var(--success-color);
+            padding: 12px;
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <header class="header">
+                <h1>🎲 Кубик</h1>
+                <p>Таймер времени для каждой грани</p>
+            </header>
+
+            <div v-if="error" class="error">
+                {{ error }}
+            </div>
+
+            <div v-if="success" class="success">
+                {{ success }}
+            </div>
+
+            <div class="status-card">
+                <div class="status-indicator">
+                    <div class="status-dot" :class="{ connected: isConnected }"></div>
+                    <span>{{ connectionStatus }}</span>
+                </div>
+                <div v-if="currentFace" class="current-face">
+                    Текущая грань: {{ currentFace }}
+                </div>
+            </div>
+
+            <div class="faces-grid">
+                <div v-for="(time, face) in faces" 
+                     :key="face" 
+                     class="face-card"
+                     :class="{ active: face === currentFace }">
+                    <span class="face-name">{{ face }}</span>
+                    <span class="face-time">{{ formatTime(time) }}</span>
+                </div>
+            </div>
+
+            <div class="total-time">
+                <div class="total-time-label">Общее время</div>
+                <div class="total-time-value">{{ formatTime(totalTime) }}</div>
+            </div>
+
+            <div class="actions">
+                <button @click="connect" 
+                        :disabled="isConnecting || isConnected" 
+                        class="btn btn-primary">
+                    <span v-if="isConnecting" class="loading"></span>
+                    {{ connectButtonText }}
+                </button>
+
+                <button @click="resetCounters" 
+                        :disabled="!isConnected || isResetting" 
+                        class="btn btn-danger">
+                    <span v-if="isResetting" class="loading"></span>
+                    🔄 Кубик обнись
+                </button>
+
+                <button @click="shareData" 
+                        :disabled="!hasData" 
+                        class="btn btn-secondary">
+                    📤 Кубик поделись
+                </button>
+
+                <button v-if="debug" @click="showLogs" 
+                        class="btn btn-secondary">
+                    📋 Показать логи
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    isConnected: false,
+                    isConnecting: false,
+                    isResetting: false,
+                    error: '',
+                    success: '',
+                    currentFace: '',
+                    faces: {
+                        'ОргВопросы': 0,
+                        'ВладИнтеграции': 0,
+                        'ТехВопросы': 0,
+                        'МоиЗадачи': 0,
+                        'НеРабота': 0,
+                        'ЭлмСофтBAK': 0
+                    },
+                    totalTime: 0,
+                    bluetoothDevice: null,
+                    characteristic: null,
+                    
+                    // Константы BLE
+                    CUBE_UUID: '85301596-98b5-b0bb-e882-fd4f797fbdb2',
+                    SERVICE_UUID: '4FAFC201-1FB5-459E-8FCC-C5C9C331914B',
+                    CHARACTERISTIC_UUID: 'BEB5483E-36E1-4688-B7F5-EA07361B26A8',
+                    
+                    // Отладка
+                    debug: true,
+                    logs: []
+                }
+            },
+            computed: {
+                connectionStatus() {
+                    if (this.isConnecting) return 'Подключение...';
+                    if (this.isConnected) return 'Подключено';
+                    return 'Не подключено';
+                },
+                connectButtonText() {
+                    if (this.isConnecting) return 'Подключение...';
+                    return '🎯 Кубик отзовись';
+                },
+                hasData() {
+                    return this.totalTime > 0 || Object.values(this.faces).some(time => time > 0);
+                }
+            },
+            methods: {
+                // Логирование операций
+                log(message, data = null) {
+                    if (!this.debug) return;
+                    
+                    const timestamp = new Date().toISOString();
+                    const logEntry = {
+                        timestamp,
+                        message,
+                        data: data ? JSON.stringify(data, null, 2) : null
+                    };
+                    
+                    this.logs.push(logEntry);
+                    console.log(`[Cube BLE] ${timestamp}: ${message}`, data || '');
+                    
+                    // Сохраняем логи в localStorage
+                    try {
+                        localStorage.setItem('cubeLogs', JSON.stringify(this.logs));
+                    } catch (error) {
+                        console.error('Ошибка сохранения логов:', error);
+                    }
+                },
+
+                // Получение всех логов
+                getLogs() {
+                    return this.logs;
+                },
+
+                // Очистка логов
+                clearLogs() {
+                    this.logs = [];
+                    localStorage.removeItem('cubeLogs');
+                    this.log('Логи очищены');
+                },
+
+                // Экспорт логов
+                exportLogs() {
+                    const logsText = this.logs.map(log => {
+                        return `[${log.timestamp}] ${log.message}${log.data ? '\\n' + log.data : ''}`;
+                    }).join('\\n\\n');
+                    
+                    return logsText;
+                },
+                async connect() {
+                    this.clearMessages();
+                    this.isConnecting = true;
+                    this.log('Начало подключения к кубику');
+
+                    try {
+                        // Проверка поддержки Web Bluetooth
+                        this.log('Проверка поддержки Web Bluetooth');
+                        if (!navigator.bluetooth) {
+                            throw new Error('Web Bluetooth не поддерживается в этом браузере');
+                        }
+                        this.log('Web Bluetooth поддерживается');
+
+                        // Поиск и подключение к кубику
+                        this.log('Запрос устройства BLE', {
+                            filters: [
+                                { name: 'Cube' },
+                                { services: [this.SERVICE_UUID] }
+                            ]
+                        });
+                        
+                        this.bluetoothDevice = await navigator.bluetooth.requestDevice({
+                            filters: [
+                                { name: 'Cube' },
+                                { services: [this.SERVICE_UUID] }
+                            ]
+                        });
+                        
+                        this.log('Устройство найдено', {
+                            name: this.bluetoothDevice.name,
+                            id: this.bluetoothDevice.id
+                        });
+
+                        // Подключение к устройству
+                        this.log('Подключение к GATT серверу');
+                        const server = await this.bluetoothDevice.gatt.connect();
+                        this.log('GATT сервер подключен');
+                        
+                        // Получение сервиса
+                        this.log('Поиск сервиса', { serviceUUID: this.SERVICE_UUID });
+                        const service = await server.getPrimaryService(this.SERVICE_UUID);
+                        this.log('Сервис найден', { serviceUUID: service.uuid });
+                        
+                        // Получение характеристики
+                        this.log('Поиск характеристики', { characteristicUUID: this.CHARACTERISTIC_UUID });
+                        this.characteristic = await service.getCharacteristic(this.CHARACTERISTIC_UUID);
+                        this.log('Характеристика найдена', { 
+                            characteristicUUID: this.characteristic.uuid,
+                            properties: this.characteristic.properties
+                        });
+                        
+                        // Чтение данных
+                        this.log('Чтение данных с устройства');
+                        await this.readData();
+                        this.log('Данные успешно прочитаны');
+                        
+                        this.isConnected = true;
+                        this.success = 'Успешно подключено к кубику!';
+                        this.log('Подключение успешно завершено');
+                        
+                        // Обработка отключения
+                        this.bluetoothDevice.addEventListener('gattserverdisconnected', () => {
+                            this.log('Соединение с кубиком потеряно');
+                            this.isConnected = false;
+                            this.error = 'Соединение с кубиком потеряно';
+                        });
+
+                    } catch (error) {
+                        this.log('Ошибка подключения', { 
+                            name: error.name,
+                            message: error.message,
+                            stack: error.stack
+                        });
+                        console.error('Ошибка подключения:', error);
+                        this.error = `Ошибка подключения: ${error.message}`;
+                    } finally {
+                        this.isConnecting = false;
+                        this.log('Процесс подключения завершен');
+                    }
+                },
+
+                async readData() {
+                    try {
+                        this.log('Чтение значения характеристики');
+                        const value = await this.characteristic.readValue();
+                        this.log('Значение прочитано', {
+                            byteLength: value.byteLength,
+                            bytes: Array.from(new Uint8Array(value))
+                        });
+                        
+                        const text = new TextDecoder().decode(value);
+                        this.log('Декодирование текста', { 
+                            textLength: text.length,
+                            text: text.substring(0, 200) + (text.length > 200 ? '...' : '')
+                        });
+                        
+                        this.parseData(text);
+                    } catch (error) {
+                        this.log('Ошибка чтения данных', { 
+                            name: error.name,
+                            message: error.message,
+                            stack: error.stack
+                        });
+                        console.error('Ошибка чтения данных:', error);
+                        throw error;
+                    }
+                },
+
+                parseData(text) {
+                    try {
+                        // Парсинг текущей грани
+                        const currentFaceMatch = text.match(/currentAge = ([^,]+)/);
+                        if (currentFaceMatch) {
+                            this.currentFace = currentFaceMatch[1].trim();
+                        }
+
+                        // Парсинг счетчиков по граням
+                        Object.keys(this.faces).forEach(face => {
+                            const regex = new RegExp(`${face}\\s*=\\s*(\\d+)\\s*min`);
+                            const match = text.match(regex);
+                            if (match) {
+                                this.faces[face] = parseInt(match[1]);
+                            }
+                        });
+
+                        // Парсинг общего времени
+                        const totalTimeMatch = text.match(/totalTime = ([^,]+)/);
+                        if (totalTimeMatch) {
+                            this.totalTime = this.parseTimeString(totalTimeMatch[1]);
+                        }
+
+                        // Сохранение в локальное хранилище
+                        this.saveToLocalStorage();
+                        
+                    } catch (error) {
+                        console.error('Ошибка парсинга данных:', error);
+                    }
+                },
+
+                parseTimeString(timeStr) {
+                    // Парсинг строки типа "3s 692ms" в миллисекунды
+                    const seconds = timeStr.match(/(\\d+)s/);
+                    const milliseconds = timeStr.match(/(\\d+)ms/);
+                    
+                    let total = 0;
+                    if (seconds) total += parseInt(seconds[1]) * 1000;
+                    if (milliseconds) total += parseInt(milliseconds[1]);
+                    
+                    return Math.round(total / 60000); // Конвертация в минуты
+                },
+
+                async resetCounters() {
+                    this.clearMessages();
+                    this.isResetting = true;
+                    this.log('Начало сброса счетчиков');
+
+                    try {
+                        // Отправка команды сброса (значение 1)
+                        const command = new Uint8Array([1]);
+                        this.log('Отправка команды сброса', { command: Array.from(command) });
+                        
+                        await this.characteristic.writeValue(command);
+                        this.log('Команда сброса отправлена успешно');
+                        
+                        // Ожидание и повторное чтение данных
+                        this.log('Ожидание 1 секунду после сброса');
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                        this.log('Повторное чтение данных после сброса');
+                        await this.readData();
+                        
+                        this.success = 'Счетчики успешно сброшены!';
+                        this.log('Счетчики успешно сброшены');
+                        
+                    } catch (error) {
+                        this.log('Ошибка сброса счетчиков', { 
+                            name: error.name,
+                            message: error.message,
+                            stack: error.stack
+                        });
+                        console.error('Ошибка сброса счетчиков:', error);
+                        this.error = `Ошибка сброса: ${error.message}`;
+                    } finally {
+                        this.isResetting = false;
+                        this.log('Процесс сброса счетчиков завершен');
+                    }
+                },
+
+                async shareData() {
+                    try {
+                        const shareText = this.generateShareText();
+                        
+                        if (navigator.share) {
+                            await navigator.share({
+                                title: 'Статистика кубика',
+                                text: shareText
+                            });
+                        } else {
+                            // Fallback для браузеров без Web Share API
+                            await this.copyToClipboard(shareText);
+                            this.success = 'Данные скопированы в буфер обмена';
+                        }
+                    } catch (error) {
+                        if (error.name !== 'AbortError') {
+                            this.error = `Ошибка отправки: ${error.message}`;
+                        }
+                    }
+                },
+
+                generateShareText() {
+                    let text = '🎲 Статистика времени по граням кубика:\\n\\n';
+                    
+                    Object.entries(this.faces).forEach(([face, time]) => {
+                        const status = face === this.currentFace ? ' (текущая)' : '';
+                        text += `${face}: ${this.formatTime(time)}${status}\\n`;
+                    });
+                    
+                    text += `\\n⏱️ Общее время: ${this.formatTime(this.totalTime)}`;
+                    text += `\\n📅 ${new Date().toLocaleDateString('ru-RU')}`;
+                    
+                    return text;
+                },
+
+                async copyToClipboard(text) {
+                    if (navigator.clipboard) {
+                        await navigator.clipboard.writeText(text);
+                    } else {
+                        // Fallback для старых браузеров
+                        const textarea = document.createElement('textarea');
+                        textarea.value = text;
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textarea);
+                    }
+                },
+
+                formatTime(minutes) {
+                    if (minutes === 0) return '0 мин';
+                    if (minutes < 60) return `${minutes} мин`;
+                    
+                    const hours = Math.floor(minutes / 60);
+                    const mins = minutes % 60;
+                    return mins > 0 ? `${hours}ч ${mins}мин` : `${hours}ч`;
+                },
+
+                saveToLocalStorage() {
+                    const data = {
+                        faces: this.faces,
+                        currentFace: this.currentFace,
+                        totalTime: this.totalTime,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem('cubeData', JSON.stringify(data));
+                },
+
+                loadFromLocalStorage() {
+                    try {
+                        // Загрузка данных приложения
+                        const saved = localStorage.getItem('cubeData');
+                        if (saved) {
+                            const data = JSON.parse(saved);
+                            this.faces = { ...this.faces, ...data.faces };
+                            this.currentFace = data.currentFace || '';
+                            this.totalTime = data.totalTime || 0;
+                            this.log('Данные приложения загружены из localStorage');
+                        }
+                        
+                        // Загрузка логов
+                        const savedLogs = localStorage.getItem('cubeLogs');
+                        if (savedLogs) {
+                            this.logs = JSON.parse(savedLogs);
+                            this.log('Логи загружены из localStorage', { count: this.logs.length });
+                        }
+                        
+                    } catch (error) {
+                        this.log('Ошибка загрузки данных из localStorage', { error: error.message });
+                        console.error('Ошибка загрузки данных:', error);
+                    }
+                },
+
+                clearMessages() {
+                    this.error = '';
+                    this.success = '';
+                    setTimeout(() => {
+                        this.error = '';
+                        this.success = '';
+                    }, 5000);
+                },
+
+                // Показать логи (только в режиме отладки)
+                showLogs() {
+                    const logsText = this.exportLogs();
+                    const blob = new Blob([logsText], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `cube-logs-${new Date().toISOString().slice(0, 19)}.txt`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    this.log('Логи экспортированы в файл');
+                }
+            },
+
+            mounted() {
+                this.log('Приложение запущено', { 
+                    debug: this.debug,
+                    userAgent: navigator.userAgent,
+                    bluetoothSupported: !!navigator.bluetooth
+                });
+                
+                // Загрузка сохраненных данных при старте
+                this.loadFromLocalStorage();
+                
+                // Проверка поддержки Web Bluetooth
+                if (!navigator.bluetooth) {
+                    this.log('Web Bluetooth не поддерживается');
+                    this.error = 'Web Bluetooth не поддерживается. Используйте Safari на iOS или Chrome на Android.';
+                } else {
+                    this.log('Web Bluetooth поддерживается');
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
