@@ -512,7 +512,7 @@
                     showInstallButton: false,
                     
                     // Версия приложения
-                    version: 'v1.1.5'
+                    version: 'v1.1.6'
                 }
             },
             computed: {
@@ -734,19 +734,21 @@
 
                 parseTimeString(timeStr) {
                     this.log('Парсинг строки времени', { timeStr: timeStr });
-                    // Парсинг строки типа "3s 692ms" в миллисекунды
+                    // Парсинг строки типа "50m 13s 943ms" в миллисекунды
+                    const minutes = timeStr.match(/(\d+)m/);
                     const seconds = timeStr.match(/(\d+)s/);
                     const milliseconds = timeStr.match(/(\d+)ms/);
                     
-                    this.log('Компоненты времени', { seconds, milliseconds });
+                    this.log('Компоненты времени', { minutes, seconds, milliseconds });
                     
                     let total = 0;
+                    if (minutes) total += parseInt(minutes[1]) * 60 * 1000;
                     if (seconds) total += parseInt(seconds[1]) * 1000;
                     if (milliseconds) total += parseInt(milliseconds[1]);
                     
-                    const minutes = Math.round(total / 60000); // Конвертация в минуты
-                    this.log('Результат конвертации', { totalMs: total, minutes: minutes });
-                    return minutes;
+                    const resultMinutes = Math.round(total / 60000); // Конвертация в минуты
+                    this.log('Результат конвертации', { totalMs: total, minutes: resultMinutes });
+                    return resultMinutes;
                 },
 
                 async resetCounters() {
