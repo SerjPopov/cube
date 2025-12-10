@@ -602,46 +602,73 @@
                 },
 
                 parseData(text) {
+                    this.log('Начало парсинга данных', { textLength: text.length, textPreview: text.substring(0, 200) });
                     try {
                         // Парсинг текущей грани
-                        const currentFaceMatch = text.match(/currentAge = ([^,]+)/);
+                        const currentFaceMatch = text.match(/currentAge = ([^.,]+)/);
+                        this.log('Парсинг текущей грани', { match: !!currentFaceMatch, face: currentFaceMatch ? currentFaceMatch[1].trim() : null });
                         if (currentFaceMatch) {
                             this.currentFace = currentFaceMatch[1].trim();
+                            this.log('Текущая грань установлена', { face: this.currentFace });
                         }
 
                         // Парсинг счетчиков по граням
                         Object.keys(this.faces).forEach(face => {
                             const regex = new RegExp(`${face}\\s*=\\s*(\\d+)\\s*min`);
                             const match = text.match(regex);
+                            
                             if (match) {
+                                const oldValue = this.faces[face];
                                 this.faces[face] = parseInt(match[1]);
+                                this.log(`Грань ${face} обновлена`, { old: oldValue, new: this.faces[face] });
+                            } else {
+                                this.log(`Грань ${face} не найдена в данных`);
                             }
                         });
 
                         // Парсинг общего времени
                         const totalTimeMatch = text.match(/totalTime = ([^,]+)/);
+                        this.log('Парсинг общего времени', { match: !!totalTimeMatch, timeString: totalTimeMatch ? totalTimeMatch[1] : null });
                         if (totalTimeMatch) {
+                            const oldTime = this.totalTime;
                             this.totalTime = this.parseTimeString(totalTimeMatch[1]);
+                            this.log('Общее время обновлено', { old: oldTime, new: this.totalTime });
                         }
 
+                        // Логируем финальное состояние
+                        this.log('Финальное состояние после парсинга', {
+                            currentFace: this.currentFace,
+                            faces: this.faces,
+                            totalTime: this.totalTime
+                        });
+
+                        // Принудительное обновление реактивности Vue
+                        this.$forceUpdate();
+                        
                         // Сохранение в локальное хранилище
                         this.saveToLocalStorage();
                         
                     } catch (error) {
+                        this.log('Ошибка парсинга данных', { error: error.message, stack: error.stack });
                         console.error('Ошибка парсинга данных:', error);
                     }
                 },
 
                 parseTimeString(timeStr) {
+                    this.log('Парсинг строки времени', { timeStr: timeStr });
                     // Парсинг строки типа "3s 692ms" в миллисекунды
-                    const seconds = timeStr.match(/(\\d+)s/);
-                    const milliseconds = timeStr.match(/(\\d+)ms/);
+                    const seconds = timeStr.match(/(\d+)s/);
+                    const milliseconds = timeStr.match(/(\d+)ms/);
+                    
+                    this.log('Компоненты времени', { seconds, milliseconds });
                     
                     let total = 0;
                     if (seconds) total += parseInt(seconds[1]) * 1000;
                     if (milliseconds) total += parseInt(milliseconds[1]);
                     
-                    return Math.round(total / 60000); // Конвертация в минуты
+                    const minutes = Math.round(total / 60000); // Конвертация в минуты
+                    this.log('Результат конвертации', { totalMs: total, minutes: minutes });
+                    return minutes;
                 },
 
                 async resetCounters() {
