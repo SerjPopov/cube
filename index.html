@@ -318,7 +318,7 @@
                         :disabled="!isConnected || isResetting" 
                         class="btn btn-danger">
                     <span v-if="isResetting" class="loading"></span>
-                    🔄 Кубик обнись
+                    🔄 Кубик обнулись
                 </button>
 
                 <button @click="shareData" 
@@ -327,9 +327,14 @@
                     📤 Кубик поделись
                 </button>
 
+                <button v-if="debug" @click="shareLogs" 
+                        class="btn btn-secondary">
+                    📋 Поделиться логами
+                </button>
+
                 <button v-if="debug" @click="showLogs" 
                         class="btn btn-secondary">
-                    📋 Показать логи
+                    💾 Скачать логи
                 </button>
             </div>
         </div>
@@ -717,7 +722,36 @@
                     }, 5000);
                 },
 
-                // Показать логи (только в режиме отладки)
+                // Поделиться логами (только в режиме отладки)
+                async shareLogs() {
+                    try {
+                        const logsText = this.exportLogs();
+                        const shareText = `🔍 Логи отладки приложения "Кубик"\\n\\n${logsText}\\n\\n📅 ${new Date().toLocaleString('ru-RU')}`;
+                        
+                        if (navigator.share) {
+                            await navigator.share({
+                                title: 'Логи отладки Кубика',
+                                text: shareText
+                            });
+                            this.log('Логи отправлены через Web Share API');
+                        } else {
+                            // Fallback - копирование в буфер обмена
+                            await this.copyToClipboard(shareText);
+                            this.success = 'Логи скопированы в буфер обмена';
+                            this.log('Логи скопированы в буфер обмена');
+                        }
+                    } catch (error) {
+                        if (error.name !== 'AbortError') {
+                            this.log('Ошибка отправки логов', { 
+                                name: error.name,
+                                message: error.message
+                            });
+                            this.error = `Ошибка отправки логов: ${error.message}`;
+                        }
+                    }
+                },
+
+                // Показать логи (только в режиме отладки) - альтернативный метод
                 showLogs() {
                     const logsText = this.exportLogs();
                     const blob = new Blob([logsText], { type: 'text/plain' });
