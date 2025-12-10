@@ -137,8 +137,10 @@
             border-radius: var(--radius);
             padding: 16px;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
+            gap: 8px;
             transition: all 0.2s ease;
         }
 
@@ -366,10 +368,7 @@
                     📋 Поделиться логами
                 </button>
 
-                <button v-if="debug" @click="showLogs" 
-                        class="btn btn-secondary">
-                    💾 Скачать логи
-                </button>
+
             </div>
         </div>
     </div>
@@ -447,7 +446,7 @@
                     showInstallButton: false,
                     
                     // Версия приложения
-                    version: 'v1.1.3'
+                    version: 'v1.1.4'
                 }
             },
             computed: {
