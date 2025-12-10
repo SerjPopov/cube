@@ -270,7 +270,7 @@
         <div class="container">
             <header class="header">
                 <h1>🎲 Кубик</h1>
-                <p>Таймер времени для каждой грани</p>
+                <p>Таймер времени для каждой грани 1</p>
             </header>
 
             <div v-if="error" class="error">
@@ -404,9 +404,10 @@
                     this.logs.push(logEntry);
                     console.log(`[Cube BLE] ${timestamp}: ${message}`, data || '');
                     
-                    // Сохраняем логи в localStorage
+                    // Сохраняем логи в localStorage с правильной кодировкой
                     try {
-                        localStorage.setItem('cubeLogs', JSON.stringify(this.logs));
+                        const logsString = JSON.stringify(this.logs);
+                        localStorage.setItem('cubeLogs', logsString);
                     } catch (error) {
                         console.error('Ошибка сохранения логов:', error);
                     }
@@ -427,8 +428,12 @@
                 // Экспорт логов
                 exportLogs() {
                     const logsText = this.logs.map(log => {
-                        return `[${log.timestamp}] ${log.message}${log.data ? '\\n' + log.data : ''}`;
-                    }).join('\\n\\n');
+                        let logEntry = `[${log.timestamp}] ${log.message}`;
+                        if (log.data) {
+                            logEntry += '\n' + log.data;
+                        }
+                        return logEntry;
+                    }).join('\n\n');
                     
                     return logsText;
                 },
@@ -642,15 +647,15 @@
                 },
 
                 generateShareText() {
-                    let text = '🎲 Статистика времени по граням кубика:\\n\\n';
+                    let text = '🎲 Статистика времени по граням кубика:\n\n';
                     
                     Object.entries(this.faces).forEach(([face, time]) => {
                         const status = face === this.currentFace ? ' (текущая)' : '';
-                        text += `${face}: ${this.formatTime(time)}${status}\\n`;
+                        text += `${face}: ${this.formatTime(time)}${status}\n`;
                     });
                     
-                    text += `\\n⏱️ Общее время: ${this.formatTime(this.totalTime)}`;
-                    text += `\\n📅 ${new Date().toLocaleDateString('ru-RU')}`;
+                    text += `\n⏱️ Общее время: ${this.formatTime(this.totalTime)}`;
+                    text += `\n📅 ${new Date().toLocaleDateString('ru-RU')}`;
                     
                     return text;
                 },
@@ -726,7 +731,7 @@
                 async shareLogs() {
                     try {
                         const logsText = this.exportLogs();
-                        const shareText = `🔍 Логи отладки приложения "Кубик"\\n\\n${logsText}\\n\\n📅 ${new Date().toLocaleString('ru-RU')}`;
+                        const shareText = `🔍 Логи отладки приложения "Кубик"\n\n${logsText}\n\n📅 ${new Date().toLocaleString('ru-RU')}`;
                         
                         if (navigator.share) {
                             await navigator.share({
@@ -754,7 +759,7 @@
                 // Показать логи (только в режиме отладки) - альтернативный метод
                 showLogs() {
                     const logsText = this.exportLogs();
-                    const blob = new Blob([logsText], { type: 'text/plain' });
+                    const blob = new Blob([logsText], { type: 'text/plain;charset=utf-8' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
