@@ -504,27 +504,21 @@
                     this.isConnecting = true;
                     this.log('Начало подключения к кубику');
 
-                    try {
-                        // Проверка поддержки Web Bluetooth
-                        this.log('Проверка поддержки Web Bluetooth');
-                        if (!navigator.bluetooth) {
-                            throw new Error('Web Bluetooth не поддерживается в этом браузере');
-                        }
-                        this.log('Web Bluetooth поддерживается');
+                    // Проверка поддержки
+                    if (!navigator.bluetooth) {
+                        this.handleNoBluetoothSupport();
+                        this.isConnecting = false;
+                        return;
+                    }
 
-                        // Поиск и подключение к кубику
+                    try {
+                        // Используем БЕЗОПАСНЫЙ фильтр
                         this.log('Запрос устройства BLE', {
-                            filters: [
-                                { name: 'Cube' },
-                                { services: [this.SERVICE_UUID] }
-                            ]
+                            filters: [{ services: [this.SERVICE_UUID] }]
                         });
                         
                         this.bluetoothDevice = await navigator.bluetooth.requestDevice({
-                            filters: [
-                                { name: 'Cube' },
-                                { services: [this.SERVICE_UUID] }
-                            ]
+                            filters: [{ services: [this.SERVICE_UUID] }] // Фильтр по UUID сервиса
                         });
                         
                         this.log('Устройство найдено', {
@@ -878,6 +872,17 @@
                     
                     this.deferredPrompt = null;
                     this.showInstallButton = false;
+                },
+
+                // Обработка отсутствия поддержки Bluetooth
+                handleNoBluetoothSupport() {
+                    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+                    if (isIOS) {
+                        this.error = 'Для работы на iOS: 1) Установите браузер Bluefy из App Store, затем 2) откройте это приложение в нём.';
+                        this.log('Требуется браузер с поддержкой Web Bluetooth (Bluefy)');
+                    } else {
+                        this.error = 'Web Bluetooth не поддерживается. Используйте Chrome 70+.';
+                    }
                 }
             },
 
@@ -896,18 +901,8 @@
                 // Загрузка сохраненных данных при старте
                 this.loadFromLocalStorage();
                 
-                // Проверка поддержки Web Bluetooth
-                if (!navigator.bluetooth) {
-                    this.log('Web Bluetooth не поддерживается');
-                    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-                    if (isIOS) {
-                        this.error = 'Web Bluetooth не поддерживается в Safari. Установите приложение как PWA или используйте Chrome на Android.';
-                    } else {
-                        this.error = 'Web Bluetooth не поддерживается. Используйте Chrome на Android или обновите браузер.';
-                    }
-                } else {
-                    this.log('Web Bluetooth поддерживается');
-                }
+                // Проверка поддержки Web Bluetooth будет в методе connect()
+                this.log('Проверка поддержки Web Bluetooth будет при попытке подключения');
             }
         }).mount('#app');
     </script>
