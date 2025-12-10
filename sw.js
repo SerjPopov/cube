@@ -2,17 +2,17 @@
 // Версия для принудительного обновления кэша
 const CACHE_NAME = 'cube-timer-v1.0.0';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon-72x72.png',
-  '/icon-96x96.png',
-  '/icon-128x128.png',
-  '/icon-144x144.png',
-  '/icon-152x152.png',
-  '/icon-192x192.png',
-  '/icon-384x384.png',
-  '/icon-512x512.png',
+  '/cube/',
+  '/cube/index.html',
+  '/cube/manifest.json',
+  '/cube/icon-72x72.png',
+  '/cube/icon-96x96.png',
+  '/cube/icon-128x128.png',
+  '/cube/icon-144x144.png',
+  '/cube/icon-152x152.png',
+  '/cube/icon-192x192.png',
+  '/cube/icon-384x384.png',
+  '/cube/icon-512x512.png',
   'https://unpkg.com/vue@3/dist/vue.global.js'
 ];
 
@@ -94,8 +94,9 @@ self.addEventListener('fetch', (event) => {
             // Для HTML запросов или запросов к корню возвращаем index.html
             if (event.request.destination === 'document' || 
                 event.request.url.endsWith('/') ||
-                event.request.url === self.location.origin) {
-              return caches.match('/index.html');
+                event.request.url === self.location.origin ||
+                event.request.url === self.location.origin + '/cube/') {
+              return caches.match('/cube/index.html');
             }
           });
       })
