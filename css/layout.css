@@ -36,7 +36,7 @@
 /* Top panels */
 .top-panels {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-xl);
 }
@@ -150,7 +150,7 @@
 /* Settings panel */
 .settings-panel {
     position: fixed;
-    bottom: 75px;
+    bottom: 0;
     left: 0;
     right: 0;
     background: var(--bg-white);
