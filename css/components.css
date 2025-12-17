@@ -300,6 +300,24 @@
     margin-top: -8px;
 }
 
+/* Reset confirmation specific styles */
+.reset-warning-message {
+    color: var(--warning-color);
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: var(--spacing-md);
+}
+
+.reset-warning-message p {
+    margin-bottom: var(--spacing-md);
+}
+
+.reset-warning-message p:last-child {
+    margin-bottom: 0;
+    font-weight: bold;
+    color: var(--danger-color);
+}
+
 .edit-form-actions {
     display: flex;
     gap: var(--spacing-md);

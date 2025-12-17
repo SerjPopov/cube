@@ -95,7 +95,7 @@
                 </div>
                 <div class="settings-panel-body">
                     <!-- Шаг 2: Добавил кнопку "Кубик обнулись" в панель настроек на первое место -->
-                    <button class="settings-btn btn-reset" @click="resetCube" :disabled="state.faces.length === 0">
+                    <button class="settings-btn btn-reset" @click="showResetConfirmation" :disabled="state.faces.length === 0">
                         🗑️ Кубик обнулись
                     </button>
                     <!-- Step 3: Added "Кубик тест" button to settings panel -->
@@ -143,6 +143,29 @@
                 </div>
             </div>
         </transition>
+
+        <!-- Модальное окно подтверждения обнуления -->
+        <transition name="modal-fade">
+            <div v-if="resetConfirmationVisible" class="modal-backdrop" @click="cancelReset">
+                <div class="modal-edit-form" @click.stop>
+                    <div class="edit-form-header">
+                        <h3>⚠️ Подтверждение обнуления</h3>
+                        <button class="close-btn" @click="cancelReset">✕</button>
+                    </div>
+                    <div class="edit-form-body">
+                        <div class="reset-warning-message">
+                            <p><strong>Внимание!</strong> Все данные за текущий период будут сброшены.</p>
+                            <p>Это действие нельзя отменить.</p>
+                            <p>Вы уверены, что хотите обнулить кубик?</p>
+                        </div>
+                        <div class="edit-form-actions">
+                            <button class="btn-save" @click="confirmReset">Да, обнулить</button>
+                            <button class="btn-cancel" @click="cancelReset">Отмена</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
     </div>
 
     <script>
@@ -168,7 +191,9 @@
                     editingFaceId: null,
                     editFormData: {
                         customName: ''
-                    }
+                    },
+                    // Step 1: Added state variable for reset confirmation dialog
+                    resetConfirmationVisible: false
                 };
             },
             mounted() {
@@ -413,7 +438,13 @@
                     });
                 },
 
-                resetCube() {
+                // Step 2: Modified resetCube to show confirmation dialog instead
+                showResetConfirmation() {
+                    this.resetConfirmationVisible = true;
+                },
+
+                // Step 3: Added confirmReset method to perform the actual reset
+                confirmReset() {
                     // Сохраняем время обнуления
                     this.state.resetTime = new Date().toLocaleString('ru-RU');
 
@@ -430,6 +461,14 @@
 
                     // Сохраняем состояние после сброса
                     this.saveStateToLocalStorage();
+
+                    // Закрываем диалог подтверждения
+                    this.resetConfirmationVisible = false;
+                },
+
+                // Step 4: Added cancelReset method to cancel the reset operation
+                cancelReset() {
+                    this.resetConfirmationVisible = false;
                 },
 
                 /**
