@@ -6,13 +6,13 @@
     <title>Cube Timer App</title>
     <script src="vue.js"></script>
     <!-- Добавлен bleManager.js для работы с BLE -->
-    <script src="bleManager.js?v=6"></script>
+    <script src="bleManager.js?v=7"></script>
     <!-- Modular CSS -->
-    <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/layout.css?v=6">
-    <link rel="stylesheet" href="css/components.css?v=6">
-    <link rel="stylesheet" href="css/animations.css?v=6">
-    <link rel="stylesheet" href="css/responsive.css?v=6">
+    <link rel="stylesheet" href="css/base.css?v=7">
+    <link rel="stylesheet" href="css/layout.css?v=7">
+    <link rel="stylesheet" href="css/components.css?v=7">
+    <link rel="stylesheet" href="css/animations.css?v=7">
+    <link rel="stylesheet" href="css/responsive.css?v=7">
 </head>
 <body>
     <div id="app" :class="{ 'debug-mode': state.debugMode }">
@@ -21,7 +21,6 @@
         </div>
 
         <div class="controls">
-            <!-- Шаг 1: Изменяем кнопку "Кубик отзовись" для работы с BLE -->
             <button class="btn btn-summon" @click="fetchDataFromBLE" :disabled="state.bleLoading">
                 {{ state.bleLoading ? 'Подключение...' : 'Кубик отзовись' }}
             </button>
@@ -47,12 +46,6 @@
         <template v-if="state.faces.length > 0">
             <!-- Top panels скрываются в режиме редактирования -->
             <div class="top-panels" v-if="!editMode">
-                <div class="current-face">
-                    <h2>📍 Текущая грань</h2>
-                    <div class="current-face-name">{{ getCurrentFaceDisplayName() || 'Не определена' }}</div>
-                    <div class="current-face-time" v-if="getCurrentFace()">{{ getCurrentFace().deltaValueIntStr }}</div>
-                </div>
-
                 <div class="times-panel">
                     <div class="time-item">
                         <div class="time-label">Время последнего обновления:</div>
