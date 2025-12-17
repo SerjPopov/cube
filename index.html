@@ -30,7 +30,8 @@
         </div>
 
         <template v-if="state.faces.length > 0">
-            <div class="top-panels">
+            <!-- Top panels скрываются в режиме редактирования -->
+            <div class="top-panels" v-if="!editMode">
                 <div class="current-face">
                     <h2>📍 Текущая грань</h2>
                     <div class="current-face-name">{{ getCurrentFaceDisplayName() || 'Не определена' }}</div>
