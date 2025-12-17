@@ -636,22 +636,14 @@
                         return 'Нет данных для отправки';
                     }
 
-                    let csv = 'Грань,Название,Текущее значение,Дельта\n';
+                    let csv = 'Время последнего обновления,Время обнуления,Грань,Активное время грани\n';
 
                     this.state.faces.forEach(face => {
                         const name = face.customName || face.name;
                         const isCurrent = face.id === this.state.currentFaceId ? '📍' : '';
-                        csv += `"${isCurrent}${name}","${face.value}","${face.deltaValueIntStr}"\n`;
+                        const resetTime = this.state.resetTime !== 0 ? this.state.resetTime : '';
+                        csv += `"${this.state.extractionTime}","${resetTime}","${isCurrent}${name}","${face.deltaValueIntStr}"\n`;
                     });
-
-                    // Добавляем информацию о времени
-                    csv += '\nВремя последнего обновления\n';
-                    csv += `"${this.state.extractionTime}"\n`;
-
-                    if (this.state.resetTime !== 0) {
-                        csv += '\nВремя обнуления\n';
-                        csv += `"${this.state.resetTime}"\n`;
-                    }
 
                     return csv;
                 },
