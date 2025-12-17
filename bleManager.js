@@ -14,12 +14,18 @@ class BleManager {
         this.SERVICE_UUID = '4FAFC201-1FB5-459E-8FCC-C5C9C331914B';
         this.CHARACTERISTIC_UUID = 'BEB5483E-36E1-4688-B7F5-EA07361B26A8';
         
+        // Версия приложения
+        this.APP_VERSION = '0.1.1';
+
         // Коллбэки для событий
         this.onDataReceived = null;
         this.onConnectionChange = null;
         this.onError = null;
         
         this.log('BLE Manager инициализирован');
+
+        // Добавляем бейдж версии в заголовок
+        this.addVersionBadge();
     }
     
     // Логирование с меткой времени
@@ -266,6 +272,59 @@ class BleManager {
         }
     }
     
+    // Добавление бейджа версии в заголовок приложения
+    addVersionBadge() {
+        // Ждем загрузки DOM
+        if (typeof document !== 'undefined' && document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.insertVersion());
+        } else {
+            setTimeout(() => this.insertVersion(), 100);
+        }
+    }
+
+    // Вставка элемента версии
+    insertVersion() {
+        try {
+            // Ищем заголовок h1 в приложении
+            const headers = document.querySelectorAll('h1');
+            let targetHeader = null;
+
+            // Предпочитаем заголовок внутри .header или просто первый h1
+            for (const header of headers) {
+                if (header.closest('.header') || header.textContent.includes('Кубик')) {
+                    targetHeader = header;
+                    break;
+                }
+            }
+
+            if (!targetHeader && headers.length > 0) {
+                targetHeader = headers[0];
+            }
+
+            if (targetHeader) {
+                // Проверяем, не добавлен ли уже бейдж
+                if (targetHeader.querySelector('.version-badge')) {
+                    return;
+                }
+
+                // Создаем элемент версии
+                const versionBadge = document.createElement('span');
+                versionBadge.className = 'version-badge';
+                versionBadge.textContent = `v${this.APP_VERSION}`;
+                versionBadge.title = `Версия приложения: ${this.APP_VERSION}`;
+
+                // Вставляем после текста заголовка
+                targetHeader.appendChild(versionBadge);
+
+                this.log(`Бейдж версии ${this.APP_VERSION} добавлен в заголовок`);
+            } else {
+                this.log('Заголовок для бейджа версии не найден');
+            }
+        } catch (error) {
+            this.log('Ошибка при добавлении бейджа версии', error);
+        }
+    }
+
     // Получение состояния подключения
     getConnectionStatus() {
         return {
@@ -273,7 +332,8 @@ class BleManager {
             deviceName: this.device ? this.device.name : null,
             deviceId: this.device ? this.device.id : null,
             serviceUuid: this.SERVICE_UUID,
-            characteristicUuid: this.CHARACTERISTIC_UUID
+            characteristicUuid: this.CHARACTERISTIC_UUID,
+            appVersion: this.APP_VERSION
         };
     }
 }
