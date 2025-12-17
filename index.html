@@ -15,13 +15,14 @@
 <body>
     <div id="app" :class="{ 'debug-mode': state.debugMode }">
         <div class="header">
-            <h1>🎲 Cube Timer Monitor</h1>
-            <p>Мониторинг потраченного времени</p>
+            <h1>🎲 Cube Timer</h1>
         </div>
 
         <div class="controls">
-            <button class="btn" @click="loadDataFromFile">Кубик тест</button>
+            <button class="btn" @click="loadDataFromFile">Кубик отзовись</button>
+            <!-- Removed: Кубик тест button from here -->
             <button class="btn btn-reset" @click="resetCube" :disabled="state.faces.length === 0">Кубик обнулись</button>
+            <button class="btn btn-share" @click="toggleSharePanel">Кубик поделись</button>
             <button class="btn btn-settings" @click="toggleSettingsPanel" :disabled="state.faces.length === 0">Кубик настройся</button>
         </div>
 
@@ -93,6 +94,10 @@
                     <button class="close-settings-btn" @click="closeSettingsPanel">✕</button>
                 </div>
                 <div class="settings-panel-body">
+                    <!-- Step 3: Added "Кубик тест" button to settings panel -->
+                    <button class="settings-btn" @click="loadDataFromFile">
+                        🧪 Кубик тест
+                    </button>
                     <button class="settings-btn" @click="toggleEditMode">
                         <span v-if="!editMode">✏️ Настроить грани</span>
                         <span v-else>✅ Завершить настройку</span>
