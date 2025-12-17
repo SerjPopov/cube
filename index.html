@@ -884,9 +884,7 @@
                     report += '\n📊 Грани:\n';
                     this.state.faces.forEach(face => {
                         report += `  ${face.id} - ${face.customName}: ${face.deltaValueIntStr}\n`;
-                        if (this.state.debugMode) {
-                            report += `    (ID: ${face.id}, Значение: ${face.value})\n`;
-                        }
+                        // Убрана отладочная информация в скобках
                     });
 
                     return report;
