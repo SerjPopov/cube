@@ -87,6 +87,16 @@
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
+/* Красная кнопка "Кубик обнулись" в панели настроек */
+.settings-btn.btn-reset {
+    background: linear-gradient(135deg, var(--danger-color) 0%, #d32f2f 100%);
+    color: var(--text-white);
+}
+
+.settings-btn.btn-reset:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--danger-hover) 0%, #c62828 100%);
+}
+
 .settings-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(0,0,0,0.3);
