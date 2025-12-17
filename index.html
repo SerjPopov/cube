@@ -96,19 +96,19 @@
                 <div class="settings-panel-body">
                     <!-- Шаг 2: Добавил кнопку "Кубик обнулись" в панель настроек на первое место -->
                     <button class="settings-btn btn-reset" @click="showResetConfirmation" :disabled="state.faces.length === 0">
-                        🗑️ Кубик обнулись
+                        Кубик обнулись
                     </button>
                     <!-- Step 3: Added "Кубик тест" button to settings panel -->
                     <button class="settings-btn" @click="loadDataFromFile">
-                        🧪 Кубик тест
+                        Кубик тест
                     </button>
                     <button class="settings-btn" @click="toggleEditMode">
-                        <span v-if="!editMode">✏️ Настроить грани</span>
-                        <span v-else>✅ Завершить настройку</span>
+                        <span v-if="!editMode">Настроить грани</span>
+                        <span v-else>OK</span>
                     </button>
                     <button class="settings-btn" @click="toggleDebugMode">
-                        <span v-if="!state.debugMode">🐛 Включить отладку</span>
-                        <span v-else>✅ Выключить отладку</span>
+                        <span v-if="!state.debugMode">Вкл. отладку</span>
+                        <span v-else>Выкл. отладку</span>
                     </button>
                 </div>
             </div>
