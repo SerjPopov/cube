@@ -21,7 +21,7 @@
         <div class="controls">
             <button class="btn btn-summon" @click="loadDataFromFile">Кубик отзовись</button>
             <!-- Removed: Кубик тест button from here -->
-            <button class="btn btn-reset" @click="resetCube" :disabled="state.faces.length === 0">Кубик обнулись</button>
+            <!-- Шаг 1: Убрал кнопку "Кубик обнулись" из основного блока управления -->
             <button class="btn btn-share" @click="toggleSharePanel">Кубик поделись</button>
             <button class="btn btn-settings" @click="toggleSettingsPanel" :disabled="state.faces.length === 0">Кубик настройся</button>
         </div>
@@ -94,6 +94,10 @@
                     <button class="close-settings-btn" @click="closeSettingsPanel">✕</button>
                 </div>
                 <div class="settings-panel-body">
+                    <!-- Шаг 2: Добавил кнопку "Кубик обнулись" в панель настроек на первое место -->
+                    <button class="settings-btn btn-reset" @click="resetCube" :disabled="state.faces.length === 0">
+                        🗑️ Кубик обнулись
+                    </button>
                     <!-- Step 3: Added "Кубик тест" button to settings panel -->
                     <button class="settings-btn" @click="loadDataFromFile">
                         🧪 Кубик тест

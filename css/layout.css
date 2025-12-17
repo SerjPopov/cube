@@ -177,8 +177,9 @@
 
 .settings-panel-body {
     display: flex;
-    flex-direction: column;
-    gap: var(--spacing-lg);
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
 }
 
 /* No data state */
