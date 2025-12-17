@@ -25,7 +25,7 @@
                 {{ state.bleLoading ? 'Подключение...' : 'Кубик отзовись' }}
             </button>
             <button class="btn btn-share" @click="toggleSharePanel">Кубик поделись</button>
-            <button class="btn btn-settings" @click="toggleSettingsPanel" :disabled="state.faces.length === 0">Кубик настройся</button>
+            <button class="btn btn-settings" @click="toggleSettingsPanel">Кубик настройся</button>
         </div>
 
         <!-- Шаг 4: Добавляем индикатор состояния BLE подключения -->
@@ -54,6 +54,10 @@
                     <div class="time-item" v-if="state.resetTime !== 0">
                         <div class="time-label">Время обнуления:</div>
                         <div class="time-value">{{ state.resetTime }}</div>
+                    </div>
+                    <div class="time-item" v-if="state.resetTime !== 0 && state.extractionTime">
+                        <div class="time-label">Время сессии:</div>
+                        <div class="time-value">{{ calculateSessionTime() }}</div>
                     </div>
                 </div>
             </div>
@@ -115,7 +119,7 @@
                     <button class="close-settings-btn" @click="closeSettingsPanel">✕</button>
                 </div>
                 <div class="settings-panel-body">
-                    <button class="settings-btn btn-reset" @click="showResetConfirmation" :disabled="state.faces.length === 0">
+                    <button class="settings-btn btn-reset" @click="showResetConfirmation" :disabled="!state.bleConnected && !state.debugMode">
                         Кубик обнулись
                     </button>
                     <!-- Кнопка для тестирования через файл -->
@@ -907,6 +911,26 @@
                     if (!date1 || !date2) return 0;
                     const diffMs = Math.abs(date2 - date1);
                     return Math.round(diffMs / (1000 * 60));
+                },
+
+                /**
+                 * Вычисляет время сессии (разница между временем последнего обновления и временем сброса)
+                 * @returns {string} время сессии в формате "X ч Y мин" или пустая строка
+                 */
+                calculateSessionTime() {
+                    if (!this.state.resetTime || this.state.resetTime === 0 || !this.state.extractionTime) {
+                        return '';
+                    }
+
+                    const resetDate = this.parseDateString(this.state.resetTime);
+                    const extractionDate = this.parseDateString(this.state.extractionTime);
+
+                    if (!resetDate || !extractionDate) {
+                        return '';
+                    }
+
+                    const diffMinutes = this.getDateDiffInMinutes(resetDate, extractionDate);
+                    return this.formatMinutesToString(diffMinutes);
                 },
 
                 /**
