@@ -134,10 +134,7 @@
                         <span v-if="!state.debugMode">Вкл. отладку</span>
                         <span v-else>Выкл. отладку</span>
                     </button>
-                    <!-- Шаг 3: Кнопка для отключения от BLE устройства -->
-                    <button class="settings-btn btn-summon" @click="disconnectBLE" :disabled="!bleManager || !state.bleConnected">
-                        {{ state.bleConnected ? 'Отключиться' : 'Нет подключения' }}
-                    </button>
+
                 </div>
             </div>
         </transition>
@@ -609,6 +606,20 @@
                 },
 
                 /**
+                 * Возвращает текст для кнопки подключения/отключения
+                 * @returns {string} текст кнопки
+                 */
+                getConnectionButtonText() {
+                    if (this.state.bleLoading) {
+                        return 'Подключение...';
+                    }
+                    if (this.state.bleConnected) {
+                        return `Отключиться (${this.state.bleDeviceName || 'Кубик'})`;
+                    }
+                    return 'Кубик отзовись';
+                },
+
+                /**
                  * Возвращает отображаемое название текущей грани
                  * @returns {string} название грани (только customName)
                  */
@@ -616,6 +627,18 @@
                     const currentFace = this.getCurrentFace();
                     if (!currentFace) return '';
                     return currentFace.customName || `Грань ${currentFace.id}`;
+                },
+
+                /**
+                 * Переключает состояние BLE подключения
+                 * (подключение, если отключен; отключение, если подключен)
+                 */
+                async toggleBLEConnection() {
+                    if (this.state.bleConnected) {
+                        await this.disconnectBLE();
+                    } else {
+                        await this.fetchDataFromBLE();
+                    }
                 },
 
                 async loadDataFromFile() {
