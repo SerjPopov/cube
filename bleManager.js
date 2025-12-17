@@ -211,8 +211,9 @@ class BleManager {
     // Команда сброса счетчиков на кубике (отправляет байт 1)
     async resetCounters() {
         try {
+            console.clear(); // Очистка консоли при сбросе
             await this.writeData(new Uint8Array([1]));
-            this.log('Команда сброса отправлена');
+            this.log('Консоль очищена. Команда сброса отправлена');
             return true;
         } catch (error) {
             this.log('Ошибка отправки команды сброса', error);
