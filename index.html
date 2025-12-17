@@ -63,7 +63,7 @@
                     @click="editMode && openEditForm(face)"
                 >
                     <div class="face-id" v-if="state.debugMode">Грань #{{ face.id }}</div>
-                    <div class="face-name">{{ face.customName || face.name }}</div>
+                    <div class="face-name">{{ face.customName }}</div>
                     <div class="face-time" v-if="state.debugMode">{{ face.value }}</div>
                     <div class="face-reset-value" v-if="state.debugMode && face.resetValue !== 0">
                         Сброшено: {{ face.resetValue }}
@@ -152,9 +152,6 @@
                             @keyup.enter="saveCustomName"
                             ref="editInput"
                         >
-                        <div class="edit-form-hint">
-                            Оригинальное: {{ getEditingFace()?.name || '' }}
-                        </div>
                         <div class="edit-form-actions">
                             <button class="btn-save" @click="saveCustomName">Сохранить</button>
                             <button class="btn-clear" @click="clearCustomName">Очистить</button>
@@ -293,6 +290,13 @@
                             this.state.rawData = parsedState.rawData || '';
                             this.state.debugMode = parsedState.debugMode || false;
 
+                            // Гарантируем, что у каждой грани есть кастомное название
+                            this.state.faces.forEach((face, index) => {
+                                if (!face.customName) {
+                                    face.customName = `Грань ${face.id || (index + 1)}`;
+                                }
+                            });
+
                             console.log('State loaded from localStorage:', parsedState);
                         }
                     } catch (e) {
@@ -372,12 +376,12 @@
 
                 /**
                  * Возвращает отображаемое название текущей грани
-                 * @returns {string} название грани (customName или name)
+                 * @returns {string} название грани (только customName)
                  */
                 getCurrentFaceDisplayName() {
                     const currentFace = this.getCurrentFace();
                     if (!currentFace) return '';
-                    return currentFace.customName || currentFace.name;
+                    return currentFace.customName || `Грань ${currentFace.id}`;
                 },
 
                 async loadDataFromFile() {
@@ -585,7 +589,9 @@
 
                     const face = this.state.faces.find(f => f.id === this.editingFaceId);
                     if (face) {
-                        face.customName = this.editFormData.customName.trim() || null;
+                        const newCustomName = this.editFormData.customName.trim();
+                        // Если пользователь ввел пустую строку, возвращаем дефолтное название
+                        face.customName = newCustomName || `Грань ${face.id}`;
                         this.saveStateToLocalStorage();
                         console.log('Custom name saved:', face);
                     }
@@ -618,7 +624,7 @@
 
                     report += '\n📊 Грани:\n';
                     this.state.faces.forEach(face => {
-                        report += `  ${face.id} - ${face.customName || face.name}: ${face.deltaValueIntStr}\n`;
+                        report += `  ${face.id} - ${face.customName}: ${face.deltaValueIntStr}\n`;
                         if (this.state.debugMode) {
                             report += `    (ID: ${face.id}, Значение: ${face.value})\n`;
                         }
@@ -722,8 +728,8 @@
                         let faceName = `Грань${faceNumber}`;
 
                         if (face) {
-                            const displayName = face.customName || face.name;
-                            faceName += `: ${displayName}`;
+                            // Используем только кастомное название
+                            faceName += `: ${face.customName}`;
                         }
 
                         headers.push(faceName);
@@ -828,16 +834,16 @@
                 },
 
                 /**
-                 * Очищает пользовательское название грани
+                 * Очищает пользовательское название грани (возвращает дефолтное)
                  */
                 clearCustomName() {
                     if (this.editingFaceId === null) return;
 
                     const face = this.state.faces.find(f => f.id === this.editingFaceId);
                     if (face) {
-                        face.customName = null;
+                        face.customName = `Грань ${face.id}`;
                         this.saveStateToLocalStorage();
-                        console.log('Custom name cleared:', face);
+                        console.log('Custom name cleared, restored default:', face);
                     }
 
                     this.closeEditForm();
