@@ -1,24 +1,24 @@
 /* Components: buttons, cards, modals */
 
-/* Buttons */
+/* Buttons - обновленные стили для кнопок в controls */
 .btn {
-    background: var(--bg-white);
-    color: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: var(--text-white);
     border: none;
-    padding: 12px 15px;
-    font-size: 0.9rem;
+    padding: 12px var(--spacing-xl);
+    font-size: 0.95rem;
     font-weight: bold;
-    border-radius: var(--radius-full);
+    border-radius: var(--radius-md);
     cursor: pointer;
-    box-shadow: var(--shadow-md);
     transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     flex: 1 1 auto;
     min-width: calc(50% - 4px);
 }
 
 .btn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
 }
 
 .btn:active {
@@ -35,27 +35,37 @@
     cursor: not-allowed;
 }
 
-/* Кнопка "Кубик отзовись" - фиолетовая */
+/* Кнопка "Кубик отзовись" - фиолетовый градиент (сохраняем текущий цвет) */
 .btn-summon {
-    background: var(--summon-color);
+    background: linear-gradient(135deg, var(--summon-color) 0%, #7b1fa2 100%);
     color: var(--text-white);
 }
 
 .btn-summon:hover:not(:disabled) {
-    background: var(--summon-hover);
+    background: linear-gradient(135deg, var(--summon-hover) 0%, #6a1b9a 100%);
 }
 
-/* Кнопка "Кубик поделись" - синяя */
+/* Кнопка "Кубик поделись" - синий градиент (сохраняем текущий цвет) */
 .btn-share {
-    background: var(--info-color);
+    background: linear-gradient(135deg, var(--info-color) 0%, #0b7dda 100%);
     color: var(--text-white);
 }
 
 .btn-share:hover:not(:disabled) {
-    background: var(--info-hover);
+    background: linear-gradient(135deg, var(--info-hover) 0%, #0a6ec4 100%);
 }
 
-/* Существующие стили остаются без изменений */
+/* Кнопка "Кубик настройся" - зеленый градиент (сохраняем текущий цвет) */
+.btn-settings {
+    background: linear-gradient(135deg, var(--success-color) 0%, #45a049 100%);
+    color: var(--text-white);
+}
+
+.btn-settings:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--success-hover) 0%, #3d8b40 100%);
+}
+
+/* Существующие стили для кнопки сброса остаются без изменений */
 .btn-reset {
     background: var(--danger-color);
     color: var(--text-white);
@@ -65,15 +75,7 @@
     background: var(--danger-hover);
 }
 
-.btn-settings {
-    background: var(--success-color);
-    color: var(--text-white);
-}
-
-.btn-settings:hover:not(:disabled) {
-    background: var(--success-hover);
-}
-
+/* Стили для кнопок в панели настроек остаются без изменений */
 .settings-btn {
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
     color: var(--text-white);
