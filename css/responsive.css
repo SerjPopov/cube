@@ -1,0 +1,138 @@
+/* Responsive styles and media queries */
+
+/* Small screens (480px and below) */
+@media screen and (max-width: 480px) {
+    .faces-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Extra small screens (320px and below) */
+@media screen and (max-width: 320px) {
+    body {
+        padding-bottom: 95px;
+    }
+
+    .header h1 {
+        font-size: 1.3rem;
+    }
+
+    .controls {
+        gap: 6px;
+        padding: 8px;
+    }
+
+    .btn {
+        font-size: 0.85rem;
+        padding: 10px 12px;
+        min-width: calc(50% - 3px);
+    }
+
+    .top-panels {
+        gap: 8px;
+    }
+
+    .faces-grid {
+        gap: 6px;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .face-card {
+        padding: 8px;
+    }
+
+    .face-id {
+        font-size: 0.65rem;
+    }
+
+    .face-name {
+        font-size: 0.95rem;
+        margin-bottom: 4px;
+    }
+
+    .face-time {
+        font-size: 0.85rem;
+    }
+
+    .face-reset-value {
+        font-size: 0.65rem;
+    }
+
+    .face-delta {
+        font-size: 0.7rem;
+        padding: 2px;
+    }
+
+    .current-face-name {
+        font-size: 1.1rem;
+    }
+
+    .time-label {
+        font-size: 0.75rem;
+    }
+
+    .time-value {
+        font-size: 0.85rem;
+    }
+
+    .settings-panel {
+        padding: 12px;
+        bottom: 70px;
+    }
+
+    .settings-panel-header h2 {
+        font-size: 1rem;
+    }
+
+    .settings-btn {
+        font-size: 0.85rem;
+        padding: 10px var(--spacing-lg);
+    }
+
+    .modal-backdrop {
+        padding: 8px;
+    }
+
+    .modal-edit-form {
+        margin-top: 8px;
+    }
+
+    .edit-form-header {
+        padding: 12px var(--spacing-lg);
+    }
+
+    .edit-form-header h3 {
+        font-size: 1rem;
+    }
+
+    .close-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 1.2rem;
+    }
+
+    .edit-form-body {
+        padding: var(--spacing-lg);
+        gap: 12px;
+    }
+
+    .edit-form-body label {
+        font-size: 0.95rem;
+    }
+
+    .edit-form-body input[type="text"] {
+        padding: 13px 14px;
+        font-size: 1rem;
+    }
+
+    .edit-form-hint {
+        font-size: 0.8rem;
+    }
+
+    .btn-save,
+    .btn-clear,
+    .btn-cancel {
+        font-size: 0.9rem;
+        padding: 12px 16px;
+    }
+}

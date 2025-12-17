@@ -1,0 +1,205 @@
+/* Layout: header, controls, panels */
+
+.header {
+    text-align: center;
+    color: var(--text-white);
+    margin-bottom: var(--spacing-xl);
+}
+
+.header h1 {
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-sm);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.header p {
+    font-size: 0.9rem;
+}
+
+/* Fixed bottom controls */
+.controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    padding: var(--spacing-md);
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+
+/* Top panels */
+.top-panels {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+}
+
+.current-face {
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.current-face h2 {
+    color: var(--primary-color);
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+}
+
+.current-face-name {
+    font-size: 1.3rem;
+    color: var(--text-primary);
+    font-weight: bold;
+}
+
+.current-face-time {
+    font-size: 1.1rem;
+    color: var(--success-color);
+    font-weight: bold;
+    margin-top: var(--spacing-sm);
+}
+
+/* Times panel */
+.times-panel {
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.times-panel h2 {
+    color: var(--primary-color);
+    margin-bottom: 12px;
+    font-size: 1.1rem;
+}
+
+.time-item {
+    margin-bottom: 8px;
+}
+
+.time-item:last-child {
+    margin-bottom: 0;
+}
+
+.time-label {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-bottom: var(--spacing-xs);
+}
+
+.time-value {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-weight: bold;
+}
+
+/* Faces grid */
+.faces-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: var(--spacing-xl);
+}
+
+/* Info panel */
+.info-panel {
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.info-panel h2 {
+    color: var(--primary-color);
+    margin-bottom: 12px;
+    font-size: 1.1rem;
+}
+
+.info-item {
+    margin-bottom: 12px;
+}
+
+.info-item:last-child {
+    margin-bottom: 0;
+}
+
+.info-label {
+    color: var(--text-secondary);
+    font-weight: bold;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+}
+
+.info-value {
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    background: var(--bg-light);
+    padding: 8px;
+    border-radius: var(--radius-sm);
+    word-break: break-all;
+}
+
+/* Settings panel */
+.settings-panel {
+    position: fixed;
+    bottom: 75px;
+    left: 0;
+    right: 0;
+    background: var(--bg-white);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: var(--shadow-lg);
+    padding: var(--spacing-lg);
+    z-index: 1001;
+}
+
+.settings-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.settings-panel-header h2 {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.settings-panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+/* No data state */
+.no-data {
+    text-align: center;
+    color: var(--text-white);
+    font-size: 1rem;
+    padding: 30px var(--spacing-xl);
+    background: rgba(255,255,255,0.1);
+    border-radius: var(--radius-lg);
+}
+
+/* Error message */
+.error-message {
+    background: var(--danger-color);
+    color: var(--text-white);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: var(--spacing-lg);
+    text-align: center;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+    animation: shake 0.5s ease;
+}

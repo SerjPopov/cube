@@ -1,0 +1,355 @@
+/* Components: buttons, cards, modals */
+
+/* Buttons */
+.btn {
+    background: var(--bg-white);
+    color: var(--primary-color);
+    border: none;
+    padding: 12px 15px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+    flex: 1 1 auto;
+    min-width: calc(50% - 4px);
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn:focus-visible {
+    outline: 3px solid rgba(102, 126, 234, 0.5);
+    outline-offset: 2px;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-reset {
+    background: var(--danger-color);
+    color: var(--text-white);
+}
+
+.btn-reset:hover:not(:disabled) {
+    background: var(--danger-hover);
+}
+
+.btn-settings {
+    background: var(--success-color);
+    color: var(--text-white);
+}
+
+.btn-settings:hover:not(:disabled) {
+    background: var(--success-hover);
+}
+
+.settings-btn {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: var(--text-white);
+    border: none;
+    padding: 12px var(--spacing-xl);
+    font-size: 0.95rem;
+    font-weight: bold;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.settings-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+}
+
+.settings-btn:active {
+    transform: translateY(0);
+}
+
+.settings-btn:focus-visible {
+    outline: 3px solid rgba(102, 126, 234, 0.5);
+    outline-offset: 2px;
+}
+
+.close-settings-btn,
+.close-btn {
+    background: var(--danger-color);
+    color: var(--text-white);
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    font-size: 1.3rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background var(--transition-fast), transform var(--transition-fast);
+    line-height: 1;
+}
+
+.close-settings-btn:hover,
+.close-btn:hover {
+    background: var(--danger-hover);
+    transform: scale(1.1);
+}
+
+.close-settings-btn:active,
+.close-btn:active {
+    transform: rotate(90deg);
+}
+
+.close-settings-btn:focus-visible,
+.close-btn:focus-visible {
+    outline: 3px solid rgba(255, 107, 107, 0.5);
+    outline-offset: 2px;
+}
+
+/* Face cards */
+.face-card {
+    background: var(--bg-gray);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), border var(--transition-fast);
+}
+
+.face-card.active {
+    background: linear-gradient(135deg, #ffe5e5 0%, #ffcccc 100%);
+    border: 2px solid var(--danger-color);
+    box-shadow: 0 0 20px rgba(255, 107, 107, 0.4);
+    transform: scale(1.02);
+}
+
+.face-card.editable {
+    cursor: pointer;
+    border: 2px dashed var(--primary-color);
+}
+
+.face-card.editable:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    background: #f0f0f0;
+}
+
+.face-card.editable:active {
+    transform: scale(0.98);
+}
+
+.face-id {
+    color: var(--text-tertiary);
+    font-size: 0.7rem;
+    margin-bottom: var(--spacing-xs);
+}
+
+.face-name {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: var(--spacing-sm);
+}
+
+.face-time {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-weight: bold;
+}
+
+.face-reset-value {
+    color: var(--text-tertiary);
+    font-size: 0.7rem;
+    margin-top: var(--spacing-xs);
+}
+
+.face-delta {
+    color: var(--success-color);
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-top: 6px;
+    padding: 6px 8px;
+    background: #e8f5e9;
+    border-radius: var(--spacing-sm);
+}
+
+.face-card.active .face-delta {
+    background: #c8e6c9;
+}
+
+/* Modal */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    z-index: 2000;
+    padding: var(--spacing-md);
+    overflow-y: auto;
+}
+
+.modal-edit-form {
+    background: var(--bg-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    width: 100%;
+    max-width: 100%;
+    margin-top: var(--spacing-md);
+    animation: slideDown var(--transition-normal) ease-out;
+}
+
+.edit-form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg) 18px;
+    border-bottom: 2px solid #f0f0f0;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.edit-form-header h3 {
+    color: var(--text-white);
+    font-size: 1.1rem;
+    margin: 0;
+    font-weight: bold;
+}
+
+.edit-form-header .close-btn {
+    background: rgba(255,255,255,0.2);
+}
+
+.edit-form-header .close-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.edit-form-header .close-btn:focus-visible {
+    outline: 3px solid rgba(255, 255, 255, 0.6);
+    outline-offset: 2px;
+}
+
+.edit-form-body {
+    padding: var(--spacing-xl) 18px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.edit-form-body label {
+    color: var(--primary-color);
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.edit-form-body input[type="text"] {
+    padding: var(--spacing-lg) 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    font-weight: 500;
+}
+
+.edit-form-body input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+}
+
+.edit-form-body input[type="text"]:hover:not(:focus) {
+    border-color: #b8b8b8;
+}
+
+.edit-form-hint {
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    font-style: italic;
+    margin-top: -8px;
+}
+
+.edit-form-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    margin-top: var(--spacing-sm);
+}
+
+.btn-save,
+.btn-clear,
+.btn-cancel {
+    border: none;
+    padding: 14px var(--spacing-xl);
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 12px;
+    cursor: pointer;
+    flex: 1;
+    color: var(--text-white);
+    transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.btn-save {
+    background: var(--success-color);
+}
+
+.btn-save:hover {
+    background: var(--success-hover);
+    transform: translateY(-2px);
+}
+
+.btn-save:active {
+    transform: translateY(0);
+}
+
+.btn-save:focus-visible {
+    outline: 3px solid rgba(76, 175, 80, 0.5);
+    outline-offset: 2px;
+}
+
+.btn-clear {
+    background: var(--warning-color);
+}
+
+.btn-clear:hover {
+    background: var(--warning-hover);
+    transform: translateY(-2px);
+}
+
+.btn-clear:active {
+    transform: translateY(0);
+}
+
+.btn-clear:focus-visible {
+    outline: 3px solid rgba(255, 152, 0, 0.5);
+    outline-offset: 2px;
+}
+
+.btn-cancel {
+    background: var(--neutral-color);
+}
+
+.btn-cancel:hover {
+    background: var(--neutral-hover);
+    transform: translateY(-2px);
+}
+
+.btn-cancel:active {
+    transform: translateY(0);
+}
+
+.btn-cancel:focus-visible {
+    outline: 3px solid rgba(158, 158, 158, 0.5);
+    outline-offset: 2px;
+}

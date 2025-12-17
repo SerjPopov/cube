@@ -1,0 +1,47 @@
+/* Animations and transitions */
+
+/* Shake animation for errors */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Slide down animation for modals */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Vue transitions: slide-up */
+.slide-up-enter-active,
+.slide-up-leave-active {
+    transition: all var(--transition-normal);
+}
+
+.slide-up-enter-from {
+    transform: translateY(100%);
+    opacity: 0;
+}
+
+.slide-up-leave-to {
+    transform: translateY(100%);
+    opacity: 0;
+}
+
+/* Vue transitions: modal-fade */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+    transition: opacity var(--transition-normal);
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+    opacity: 0;
+}

@@ -1,0 +1,59 @@
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+__pycache__/
+*.pyc
+*.pyo
+*.class
+*.o
+*.so
+*.dll
+*.exe
+
+# Dependencies
+node_modules/
+vendor/
+venv/
+env/
+.venv/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Data files (cube data)
+data_from_cube.txt
+*.dat
+*.bin
+
+# Configuration
+.env
+.env.local
+config.local.*
+secrets.*
+
+# Test coverage
+coverage/
+.coverage
+htmlcov/
+
+# Documentation builds
+docs/_build/
+site/

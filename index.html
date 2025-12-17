@@ -4,190 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cube Timer App</title>
-    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        #app {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .controls {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .btn {
-            background: white;
-            color: #667eea;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .current-face {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .current-face h2 {
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 1.3rem;
-        }
-
-        .current-face-name {
-            font-size: 2rem;
-            color: #333;
-            font-weight: bold;
-        }
-
-        .faces-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .face-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease;
-        }
-
-        .face-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .face-card.active {
-            border: 3px solid #667eea;
-            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .face-name {
-            color: #667eea;
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .face-time {
-            color: #333;
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        .face-id {
-            color: #999;
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-        }
-
-        .info-panel {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .info-panel h2 {
-            color: #667eea;
-            margin-bottom: 15px;
-            font-size: 1.3rem;
-        }
-
-        .info-item {
-            margin-bottom: 15px;
-        }
-
-        .info-label {
-            color: #666;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .info-value {
-            color: #333;
-            font-size: 1rem;
-            background: #f5f5f5;
-            padding: 10px;
-            border-radius: 8px;
-            word-break: break-all;
-        }
-
-        .no-data {
-            text-align: center;
-            color: white;
-            font-size: 1.2rem;
-            padding: 40px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 15px;
-        }
-
-        input[type="file"] {
-            display: none;
-        }
-    </style>
+    <script src="vue.js"></script>
+    <!-- Modular CSS -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
-    <div id="app">
+    <div id="app" :class="{ 'debug-mode': state.debugMode }">
         <div class="header">
             <h1>🎲 Cube Timer Monitor</h1>
-            <p>Мониторинг времени работы граней кубика</p>
+            <p>Мониторинг потраченного времени</p>
         </div>
 
         <div class="controls">
-            <input type="file" id="fileInput" @change="loadFile" accept=".txt">
-            <button class="btn" @click="triggerFileInput">Кубик тест</button>
+            <button class="btn" @click="loadDataFromFile">Кубик тест</button>
+            <button class="btn btn-reset" @click="resetCube" :disabled="state.faces.length === 0">Кубик обнулись</button>
+            <button class="btn btn-settings" @click="toggleSettingsPanel" :disabled="state.faces.length === 0">Кубик настройся</button>
+        </div>
+
+        <div v-if="state.error" class="error-message">
+            {{ state.error }}
         </div>
 
         <template v-if="state.faces.length > 0">
-            <div class="current-face">
-                <h2>📍 Текущая грань</h2>
-                <div class="current-face-name">{{ state.currentFace || 'Не определена' }}</div>
+            <div class="top-panels">
+                <div class="current-face">
+                    <h2>📍 Текущая грань</h2>
+                    <div class="current-face-name">{{ getCurrentFaceDisplayName() || 'Не определена' }}</div>
+                    <div class="current-face-time" v-if="getCurrentFace()">{{ getCurrentFace().deltaValueIntStr }}</div>
+                </div>
+
+                <div class="times-panel">
+                    <div class="time-item">
+                        <div class="time-label">Время последнего обновления:</div>
+                        <div class="time-value">{{ state.extractionTime }}</div>
+                    </div>
+                    <div class="time-item" v-if="state.resetTime !== 0">
+                        <div class="time-label">Время обнуления:</div>
+                        <div class="time-value">{{ state.resetTime }}</div>
+                    </div>
+                </div>
             </div>
 
             <div class="faces-grid">
@@ -195,30 +54,85 @@
                     v-for="face in state.faces" 
                     :key="face.id"
                     class="face-card"
-                    :class="{ active: face.name === state.currentFace }"
+                    :class="{
+                        active: face.id === state.currentFaceId,
+                        editable: editMode
+                    }"
+                    @click="editMode && openEditForm(face)"
                 >
-                    <div class="face-id">Грань #{{ face.id }}</div>
-                    <div class="face-name">{{ face.name }}</div>
-                    <div class="face-time">{{ face.value }}</div>
+                    <div class="face-id" v-if="state.debugMode">Грань #{{ face.id }}</div>
+                    <div class="face-name">{{ face.customName || face.name }}</div>
+                    <div class="face-time" v-if="state.debugMode">{{ face.value }}</div>
+                    <div class="face-reset-value" v-if="state.debugMode && face.resetValue !== 0">
+                        Сброшено: {{ face.resetValue }}
+                    </div>
+                    <div class="face-delta">
+                        {{ face.deltaValueIntStr }}
+                    </div>
                 </div>
             </div>
 
-            <div class="info-panel">
-                <h2>ℹ️ Информация</h2>
+            <div class="info-panel" v-if="state.debugMode">
+                <h2>ℹ️ Исходные данные</h2>
                 <div class="info-item">
-                    <div class="info-label">Время последнего извлечения:</div>
-                    <div class="info-value">{{ state.extractionTime }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Исходные данные:</div>
                     <div class="info-value">{{ state.rawData }}</div>
                 </div>
             </div>
         </template>
 
-        <div v-else class="no-data">
+        <div v-else-if="!state.error" class="no-data">
             <p>📂 Нажмите "Кубик тест" для загрузки данных из файла</p>
         </div>
+
+        <!-- Панель настроек -->
+        <transition name="slide-up">
+            <div v-if="settingsPanelVisible" class="settings-panel">
+                <div class="settings-panel-header">
+                    <h2>⚙️ Настройки</h2>
+                    <button class="close-settings-btn" @click="closeSettingsPanel">✕</button>
+                </div>
+                <div class="settings-panel-body">
+                    <button class="settings-btn" @click="toggleEditMode">
+                        <span v-if="!editMode">✏️ Настроить грани</span>
+                        <span v-else>✅ Завершить настройку</span>
+                    </button>
+                    <button class="settings-btn" @click="toggleDebugMode">
+                        <span v-if="!state.debugMode">🐛 Включить режим отладки</span>
+                        <span v-else>✅ Выключить режим отладки</span>
+                    </button>
+                </div>
+            </div>
+        </transition>
+
+        <!-- Модальная форма редактирования (вынесена за пределы карточек) -->
+        <transition name="modal-fade">
+            <div v-if="editingFaceId !== null" class="modal-backdrop" @click="closeEditForm">
+                <div class="modal-edit-form" @click.stop>
+                    <div class="edit-form-header">
+                        <h3>Настройка грани #{{ editingFaceId }}</h3>
+                        <button class="close-btn" @click="closeEditForm">✕</button>
+                    </div>
+                    <div class="edit-form-body">
+                        <label>Название грани:</label>
+                        <input
+                            type="text"
+                            v-model="editFormData.customName"
+                            placeholder="Введите название"
+                            @keyup.enter="saveCustomName"
+                            ref="editInput"
+                        >
+                        <div class="edit-form-hint">
+                            Оригинальное: {{ getEditingFace()?.name || '' }}
+                        </div>
+                        <div class="edit-form-actions">
+                            <button class="btn-save" @click="saveCustomName">Сохранить</button>
+                            <button class="btn-clear" @click="clearCustomName">Очистить</button>
+                            <button class="btn-cancel" @click="closeEditForm">Отмена</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
     </div>
 
     <script>
@@ -230,26 +144,203 @@
                     state: {
                         faces: [],
                         currentFace: '',
+                        currentFaceId: null,
                         extractionTime: '',
-                        rawData: ''
+                        resetTime: 0,
+                        rawData: '',
+                        error: '',
+                        debugMode: false
+                    },
+                    storageAvailable: false,
+                    STORAGE_KEY: 'cube_timer_state',
+                    settingsPanelVisible: false,
+                    editMode: false,
+                    editingFaceId: null,
+                    editFormData: {
+                        customName: ''
                     }
                 };
             },
-            methods: {
-                triggerFileInput() {
-                    document.getElementById('fileInput').click();
-                },
-                
-                loadFile(event) {
-                    const file = event.target.files[0];
-                    if (!file) return;
+            mounted() {
+                // Проверяем доступность localStorage
+                this.checkLocalStorageAvailable();
 
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const content = e.target.result;
+                // Загружаем сохраненное состояние при запуске
+                if (this.storageAvailable) {
+                    this.loadStateFromLocalStorage();
+                }
+            },
+            methods: {
+                /**
+                 * Проверяет доступность localStorage
+                 */
+                checkLocalStorageAvailable() {
+                    try {
+                        const test = '__localStorage_test__';
+                        localStorage.setItem(test, test);
+                        localStorage.removeItem(test);
+                        this.storageAvailable = true;
+                    } catch (e) {
+                        console.warn('localStorage недоступен:', e);
+                        this.storageAvailable = false;
+                    }
+                },
+
+                /**
+                 * Сохраняет состояние в localStorage
+                 */
+                saveStateToLocalStorage() {
+                    if (!this.storageAvailable) {
+                        return;
+                    }
+
+                    try {
+                        // Создаем копию state без поля error (оно временное)
+                        const stateToSave = {
+                            faces: this.state.faces,
+                            currentFace: this.state.currentFace,
+                            currentFaceId: this.state.currentFaceId,
+                            extractionTime: this.state.extractionTime,
+                            resetTime: this.state.resetTime,
+                            rawData: this.state.rawData,
+                            debugMode: this.state.debugMode
+                        };
+
+                        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(stateToSave));
+                        console.log('State saved to localStorage:', stateToSave);
+                    } catch (e) {
+                        console.error('Ошибка сохранения в localStorage:', e);
+                    }
+                },
+
+                /**
+                 * Загружает состояние из localStorage
+                 */
+                loadStateFromLocalStorage() {
+                    if (!this.storageAvailable) {
+                        return;
+                    }
+
+                    try {
+                        const savedState = localStorage.getItem(this.STORAGE_KEY);
+
+                        if (savedState) {
+                            const parsedState = JSON.parse(savedState);
+
+                            // Восстанавливаем состояние
+                            this.state.faces = parsedState.faces || [];
+                            this.state.currentFace = parsedState.currentFace || '';
+                            this.state.currentFaceId = parsedState.currentFaceId || null;
+                            this.state.extractionTime = parsedState.extractionTime || '';
+                            this.state.resetTime = parsedState.resetTime || 0;
+                            this.state.rawData = parsedState.rawData || '';
+                            this.state.debugMode = parsedState.debugMode || false;
+
+                            console.log('State loaded from localStorage:', parsedState);
+                        }
+                    } catch (e) {
+                        console.error('Ошибка загрузки из localStorage:', e);
+                    }
+                },
+
+                /**
+                 * Преобразует строку времени в минуты
+                 * @param {string} timeStr - строка формата "11 h 18 min", "15 min", "0 min" или "0"
+                 * @returns {number} количество минут
+                 */
+                parseTimeToMinutes(timeStr) {
+                    if (!timeStr || timeStr === '0') {
+                        return 0;
+                    }
+
+                    let totalMinutes = 0;
+
+                    // Извлекаем часы
+                    const hoursMatch = timeStr.match(/(\d+)\s*h/);
+                    if (hoursMatch) {
+                        totalMinutes += parseInt(hoursMatch[1]) * 60;
+                    }
+
+                    // Извлекаем минуты
+                    const minutesMatch = timeStr.match(/(\d+)\s*min/);
+                    if (minutesMatch) {
+                        totalMinutes += parseInt(minutesMatch[1]);
+                    }
+
+                    return totalMinutes;
+                },
+
+                /**
+                 * Преобразует минуты в строку формата "X h Y min"
+                 * @param {number} minutes - количество минут
+                 * @returns {string} строка формата "11 h 18 min" или "15 min" или "0 min"
+                 */
+                formatMinutesToString(minutes) {
+                    if (minutes === 0) {
+                        return '0 min';
+                    }
+
+                    const hours = Math.floor(minutes / 60);
+                    const mins = minutes % 60;
+
+                    if (hours > 0 && mins > 0) {
+                        return `${hours} h ${mins} min`;
+                    } else if (hours > 0) {
+                        return `${hours} h 0 min`;
+                    } else {
+                        return `${mins} min`;
+                    }
+                },
+
+                /**
+                 * Вычисляет разницу между текущим значением и значением при сбросе
+                 * @param {object} face - объект грани с полями value и resetValue
+                 */
+                calculateDelta(face) {
+                    const currentMinutes = this.parseTimeToMinutes(face.value);
+                    const resetMinutes = this.parseTimeToMinutes(face.resetValue);
+
+                    face.deltaValueInt = currentMinutes - resetMinutes;
+                    face.deltaValueIntStr = this.formatMinutesToString(face.deltaValueInt);
+                },
+
+                /**
+                 * Возвращает объект текущей грани
+                 * @returns {object|null} объект грани или null
+                 */
+                getCurrentFace() {
+                    if (this.state.currentFaceId === null) return null;
+                    return this.state.faces.find(f => f.id === this.state.currentFaceId) || null;
+                },
+
+                /**
+                 * Возвращает отображаемое название текущей грани
+                 * @returns {string} название грани (customName или name)
+                 */
+                getCurrentFaceDisplayName() {
+                    const currentFace = this.getCurrentFace();
+                    if (!currentFace) return '';
+                    return currentFace.customName || currentFace.name;
+                },
+
+                async loadDataFromFile() {
+                    try {
+                        this.state.error = '';
+                        const response = await fetch('data_from_cube.txt');
+
+                        if (!response.ok) {
+                            throw new Error('Не удалось загрузить файл data_from_cube.txt');
+                        }
+
+                        const content = await response.text();
                         this.parseData(content);
-                    };
-                    reader.readAsText(file);
+
+                        // Сохраняем состояние после загрузки данных
+                        this.saveStateToLocalStorage();
+                    } catch (error) {
+                        console.error('Ошибка загрузки файла:', error);
+                        this.state.error = 'Ошибка: ' + error.message;
+                    }
                 },
 
                 parseData(content) {
@@ -274,21 +365,164 @@
                         
                         // Пропускаем currentAge, если он попал в результат
                         if (name !== 'currentAge') {
-                            faces.push({
+                            // Проверяем, есть ли уже грань с таким именем (для сохранения resetValue и customName)
+                            const existingFace = this.state.faces.find(f => f.name === name);
+
+                            const face = {
                                 id: id++,
                                 name: name,
-                                value: value
-                            });
+                                value: value,
+                                resetValue: existingFace ? existingFace.resetValue : 0,
+                                customName: existingFace ? existingFace.customName : null,
+                                deltaValueInt: 0,
+                                deltaValueIntStr: '0 min'
+                            };
+
+                            // Вычисляем дельту
+                            this.calculateDelta(face);
+
+                            faces.push(face);
                         }
                     }
 
                     this.state.faces = faces;
 
+                    // Определяем ID текущей грани
+                    if (this.state.currentFace) {
+                        const currentFaceObj = this.state.faces.find(f => f.name === this.state.currentFace);
+                        this.state.currentFaceId = currentFaceObj ? currentFaceObj.id : null;
+                    } else {
+                        this.state.currentFaceId = null;
+                    }
+
                     console.log('Parsed data:', {
                         currentFace: this.state.currentFace,
+                        currentFaceId: this.state.currentFaceId,
                         faces: this.state.faces,
                         extractionTime: this.state.extractionTime
                     });
+                },
+
+                resetCube() {
+                    // Сохраняем время обнуления
+                    this.state.resetTime = new Date().toLocaleString('ru-RU');
+
+                    // Сохраняем текущие значения в resetValue для каждой грани и пересчитываем дельту
+                    this.state.faces.forEach(face => {
+                        face.resetValue = face.value;
+                        this.calculateDelta(face);
+                    });
+
+                    console.log('Cube reset:', {
+                        resetTime: this.state.resetTime,
+                        faces: this.state.faces
+                    });
+
+                    // Сохраняем состояние после сброса
+                    this.saveStateToLocalStorage();
+                },
+
+                /**
+                 * Открывает/закрывает панель настроек
+                 */
+                toggleSettingsPanel() {
+                    this.settingsPanelVisible = !this.settingsPanelVisible;
+                },
+
+                /**
+                 * Закрывает панель настроек
+                 */
+                closeSettingsPanel() {
+                    this.settingsPanelVisible = false;
+                    // Выходим из режима редактирования при закрытии панели
+                    if (this.editMode) {
+                        this.editMode = false;
+                        this.closeEditForm();
+                    }
+                },
+
+                /**
+                 * Включает/выключает режим редактирования граней
+                 */
+                toggleEditMode() {
+                    this.editMode = !this.editMode;
+                    if (!this.editMode) {
+                        this.closeEditForm();
+                    }
+                },
+
+                /**
+                 * Открывает форму редактирования для грани
+                 */
+                openEditForm(face) {
+                    if (!this.editMode) return;
+
+                    this.editingFaceId = face.id;
+                    this.editFormData.customName = face.customName || '';
+
+                    // Фокусируем инпут после следующего рендера
+                    this.$nextTick(() => {
+                        if (this.$refs.editInput) {
+                            this.$refs.editInput.focus();
+                        }
+                    });
+                },
+
+                /**
+                 * Закрывает форму редактирования
+                 */
+                closeEditForm() {
+                    this.editingFaceId = null;
+                    this.editFormData.customName = '';
+                },
+
+                /**
+                 * Возвращает редактируемую грань
+                 */
+                getEditingFace() {
+                    if (this.editingFaceId === null) return null;
+                    return this.state.faces.find(f => f.id === this.editingFaceId);
+                },
+
+                /**
+                 * Сохраняет пользовательское название грани
+                 */
+                saveCustomName() {
+                    if (this.editingFaceId === null) return;
+
+                    const face = this.state.faces.find(f => f.id === this.editingFaceId);
+                    if (face) {
+                        face.customName = this.editFormData.customName.trim() || null;
+                        this.saveStateToLocalStorage();
+                        console.log('Custom name saved:', face);
+                    }
+
+                    this.closeEditForm();
+                },
+
+                /**
+                 * Очищает пользовательское название грани
+                 */
+                clearCustomName() {
+                    if (this.editingFaceId === null) return;
+
+                    const face = this.state.faces.find(f => f.id === this.editingFaceId);
+                    if (face) {
+                        face.customName = null;
+                        this.saveStateToLocalStorage();
+                        console.log('Custom name cleared:', face);
+                    }
+
+                    this.closeEditForm();
+                },
+
+                /**
+                 * Переключает режим отладки
+                 */
+                toggleDebugMode() {
+                    this.state.debugMode = !this.state.debugMode;
+                    this.saveStateToLocalStorage();
+                    console.log('Debug mode:', this.state.debugMode);
                 }
             }
         }).mount('#app');
