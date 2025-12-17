@@ -16,6 +16,10 @@
     --success-hover: #45a049;
     --warning-color: #ff9800;
     --warning-hover: #f57c00;
+    --info-color: #2196f3;      /* Добавлен для кнопки "поделись" */
+    --info-hover: #0b7dda;      /* Добавлен для кнопки "поделись" */
+    --summon-color: #9c27b0;    /* Добавлен для кнопки "отзовись" */
+    --summon-hover: #7b1fa2;    /* Добавлен для кнопки "отзовись" */
     --neutral-color: #9e9e9e;
     --neutral-hover: #757575;
     

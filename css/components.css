@@ -35,6 +35,27 @@
     cursor: not-allowed;
 }
 
+/* Кнопка "Кубик отзовись" - фиолетовая */
+.btn-summon {
+    background: var(--summon-color);
+    color: var(--text-white);
+}
+
+.btn-summon:hover:not(:disabled) {
+    background: var(--summon-hover);
+}
+
+/* Кнопка "Кубик поделись" - синяя */
+.btn-share {
+    background: var(--info-color);
+    color: var(--text-white);
+}
+
+.btn-share:hover:not(:disabled) {
+    background: var(--info-hover);
+}
+
+/* Существующие стили остаются без изменений */
 .btn-reset {
     background: var(--danger-color);
     color: var(--text-white);
