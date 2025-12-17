@@ -6,13 +6,13 @@
     <title>Cube Timer App</title>
     <script src="vue.js"></script>
     <!-- Добавлен bleManager.js для работы с BLE -->
-    <script src="bleManager.js"></script>
+    <script src="bleManager.js?v=6"></script>
     <!-- Modular CSS -->
     <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/layout.css?v=5">
-    <link rel="stylesheet" href="css/components.css?v=5">
-    <link rel="stylesheet" href="css/animations.css?v=5">
-    <link rel="stylesheet" href="css/responsive.css?v=5">
+    <link rel="stylesheet" href="css/layout.css?v=6">
+    <link rel="stylesheet" href="css/components.css?v=6">
+    <link rel="stylesheet" href="css/animations.css?v=6">
+    <link rel="stylesheet" href="css/responsive.css?v=6">
 </head>
 <body>
     <div id="app" :class="{ 'debug-mode': state.debugMode }">
@@ -240,10 +240,13 @@
                         bleConnected: false,
                         bleDeviceName: '',
                         bleDeviceInfo: '',
-                        bleError: ''
+                        bleError: '',
+                        // Логи BLE
+                        bleLogs: []
                     },
                     storageAvailable: false,
                     STORAGE_KEY: 'cube_timer_state',
+                    MAX_LOG_ENTRIES: 50,
                     settingsPanelVisible: false,
                     sharePanelVisible: false,
                     editMode: false,

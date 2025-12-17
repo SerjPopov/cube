@@ -31,12 +31,46 @@ class BleManager {
     
     // Проверка поддержки Web Bluetooth API
     checkBluetoothSupport() {
+        // Проверяем наличие API
         if (!navigator.bluetooth) {
             const error = 'Web Bluetooth API не поддерживается в этом браузере';
             this.log(error);
             if (this.onError) this.onError(error);
             return false;
         }
+
+        // Дополнительная проверка для iOS
+        const userAgent = navigator.userAgent || '';
+        const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+
+        if (isIOS) {
+            // Проверяем версию Safari (Web Bluetooth доступен с iOS 15.4)
+            const versionMatch = userAgent.match(/OS (\d+)_(\d+)/);
+            if (versionMatch) {
+                const majorVersion = parseInt(versionMatch[1], 10);
+                const minorVersion = parseInt(versionMatch[2], 10);
+
+                if (majorVersion < 15 || (majorVersion === 15 && minorVersion < 4)) {
+                    const error = 'Web Bluetooth требует iOS 15.4 или выше';
+                    this.log(error);
+                    if (this.onError) this.onError(error);
+                    return false;
+                }
+            }
+
+            // Проверяем, что мы на HTTPS или localhost
+            const isLocalhost = window.location.hostname === 'localhost' ||
+                               window.location.hostname === '127.0.0.1';
+            const isSecure = window.location.protocol === 'https:';
+
+            if (!isLocalhost && !isSecure) {
+                const error = 'Web Bluetooth на iOS требует HTTPS (кроме localhost)';
+                this.log(error);
+                if (this.onError) this.onError(error);
+                return false;
+            }
+        }
+
         return true;
     }
     
