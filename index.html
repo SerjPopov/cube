@@ -97,6 +97,15 @@
                     <div class="info-label">BLE устройство:</div>
                     <div class="info-value">{{ state.bleDeviceInfo }}</div>
                 </div>
+                <div class="info-item" v-if="state.bleLogs.length > 0">
+                    <div class="info-label">Логи BLE (последние {{ Math.min(state.bleLogs.length, MAX_LOG_ENTRIES) }}/{{ MAX_LOG_ENTRIES }}):</div>
+                    <div class="info-value" style="max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.8rem;">
+                        <div v-for="(log, index) in state.bleLogs.slice().reverse()" :key="log.timestamp"
+                             :style="{ color: getLogColor(log.level), marginBottom: '4px' }">
+                            [{{ new Date(log.timestamp).toLocaleTimeString('ru-RU') }}] {{ log.level.toUpperCase() }}: {{ log.message }}
+                        </div>
+                    </div>
+                </div>
             </div>
         </template>
 
@@ -259,16 +268,47 @@
             },
             methods: {
                 /**
+                 * Добавляет запись в лог BLE
+                 * @param {string} level - уровень (info, warning, error, success)
+                 * @param {string} message - сообщение
+                 */
+                addLog(level, message) {
+                    const timestamp = new Date().toISOString();
+                    const logEntry = {
+                        timestamp,
+                        level,
+                        message
+                    };
+
+                    // Добавляем новую запись в начало массива
+                    this.state.bleLogs.unshift(logEntry);
+
+                    // Ограничиваем количество записей
+                    if (this.state.bleLogs.length > this.MAX_LOG_ENTRIES) {
+                        this.state.bleLogs = this.state.bleLogs.slice(0, this.MAX_LOG_ENTRIES);
+                    }
+
+                    // Сохраняем состояние (включая логи) в localStorage
+                    this.saveStateToLocalStorage();
+
+                    // Также выводим в консоль для отладки
+                    const prefix = `[${timestamp.split('T')[1].split('.')[0]}] 🔵 BLE`;
+                    console.log(`${prefix} ${level.toUpperCase()}: ${message}`);
+                },
+
+                /**
                  * Инициализирует BLE Manager
                  */
                 initializeBleManager() {
                     try {
                         if (typeof BleManager === 'undefined') {
+                            this.addLog('error', 'BleManager не загружен');
                             console.warn('BleManager не загружен');
                             return;
                         }
 
                         this.bleManager = new BleManager();
+                        this.addLog('info', 'BLE Manager инициализирован');
 
                         // Настраиваем обработчики событий BLE
                         this.bleManager.onConnectionChange = (connected) => {
@@ -278,8 +318,10 @@
                                 (this.bleManager.device?.name || 'Безымянное устройство') : '';
 
                             if (connected) {
+                                this.addLog('success', 'Подключение к BLE устройству установлено');
                                 console.log('BLE подключение установлено');
                             } else {
+                                this.addLog('info', 'Отключено от BLE устройства');
                                 console.log('BLE отключено');
                             }
                         };
@@ -288,16 +330,18 @@
                             this.state.bleError = error.message || String(error);
                             this.state.bleStatus = 'error';
                             this.state.bleLoading = false;
+                            this.addLog('error', `Ошибка BLE: ${error.message || String(error)}`);
                             console.error('BLE ошибка:', error);
                         };
 
                         this.bleManager.onDataReceived = (data) => {
+                            this.addLog('info', `Получены данные BLE: ${data.bytes?.length || 0} байт`);
                             console.log('Получены данные по BLE:', data);
                             // Данные обрабатываются в основном методе fetchDataFromBLE
                         };
 
-                        console.log('BLE Manager инициализирован');
                     } catch (error) {
+                        this.addLog('error', `Ошибка инициализации BLE Manager: ${error.message}`);
                         console.error('Ошибка инициализации BLE Manager:', error);
                         this.state.bleError = 'Ошибка инициализации BLE: ' + error.message;
                         this.state.bleStatus = 'error';
@@ -312,6 +356,7 @@
                         this.initializeBleManager();
                         if (!this.bleManager) {
                             this.state.error = 'BLE Manager не загружен. Проверьте подключение bleManager.js';
+                            this.addLog('error', 'BLE Manager не загружен');
                             return;
                         }
                     }
@@ -320,18 +365,23 @@
                     this.state.bleLoading = true;
                     this.state.bleStatus = 'connecting';
                     this.state.bleError = '';
+                    this.addLog('info', 'Инициируется подключение к BLE устройству');
 
                     try {
                         console.log('Инициируем подключение к BLE устройству...');
+                        this.addLog('info', 'Запрос устройства через Web Bluetooth API');
 
                         // Подключаемся к устройству
                         await this.bleManager.connect();
+                        this.addLog('success', 'Устройство подключено через GATT сервер');
 
                         // Обновляем информацию об устройстве
                         const status = this.bleManager.getConnectionStatus();
                         this.state.bleDeviceInfo = `Устройство: ${status.deviceName || 'Без имени'} (${status.deviceId?.substring(0, 8) || 'N/A'})`;
+                        this.addLog('info', `Найдено устройство: ${status.deviceName || 'Без имени'}`);
 
                         console.log('Чтение данных с BLE устройства...');
+                        this.addLog('info', 'Чтение данных с характеристики');
 
                         // Читаем данные с устройства
                         const data = await this.bleManager.readData();
@@ -340,10 +390,12 @@
                         const textData = data.text;
 
                         if (!textData || textData.trim() === '') {
+                            this.addLog('warning', 'Получены пустые данные от устройства');
                             throw new Error('Получены пустые данные от устройства');
                         }
 
                         console.log('Получены данные от BLE:', textData.substring(0, 100) + '...');
+                        this.addLog('info', `Получены данные BLE (${textData.length} символов): ${textData.substring(0, 50)}...`);
 
                         // Парсим данные так же, как и из файла
                         this.parseData(textData);
@@ -355,6 +407,7 @@
                         this.state.bleStatus = 'connected';
                         this.state.bleDeviceName = this.bleManager.device?.name || 'Кубик';
 
+                        this.addLog('success', 'Данные успешно получены и обработаны через BLE');
                         console.log('Данные успешно получены и обработаны через BLE');
 
                     } catch (error) {
@@ -362,6 +415,7 @@
                         this.state.bleStatus = 'error';
                         this.state.bleError = error.message || 'Неизвестная ошибка BLE';
                         this.state.error = 'Ошибка BLE: ' + error.message;
+                        this.addLog('error', `Ошибка получения данных: ${error.message}`);
 
                         // Предлагаем загрузить тестовые данные
                         setTimeout(() => {
@@ -380,19 +434,23 @@
                  */
                 async disconnectBLE() {
                     if (!this.bleManager || !this.state.bleConnected) {
+                        this.addLog('warning', 'Попытка отключения без активного подключения');
                         return;
                     }
 
                     try {
+                        this.addLog('info', 'Инициируется отключение от BLE устройства');
                         await this.bleManager.disconnect();
                         this.state.bleConnected = false;
                         this.state.bleStatus = '';
                         this.state.bleDeviceName = '';
                         this.state.bleDeviceInfo = '';
+                        this.addLog('success', 'Отключено от BLE устройства');
                         console.log('Отключились от BLE устройства');
                     } catch (error) {
                         console.error('Ошибка отключения от BLE:', error);
                         this.state.error = 'Ошибка отключения: ' + error.message;
+                        this.addLog('error', `Ошибка отключения: ${error.message}`);
                     }
                 },
 
@@ -428,13 +486,15 @@
                             extractionTime: this.state.extractionTime,
                             resetTime: this.state.resetTime,
                             rawData: this.state.rawData,
-                            debugMode: this.state.debugMode
+                            debugMode: this.state.debugMode,
+                            bleLogs: this.state.bleLogs
                         };
 
                         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(stateToSave));
                         console.log('State saved to localStorage:', stateToSave);
                     } catch (e) {
                         console.error('Ошибка сохранения в localStorage:', e);
+                        this.addLog('error', `Ошибка сохранения в localStorage: ${e.message}`);
                     }
                 },
 
@@ -460,6 +520,7 @@
                             this.state.resetTime = parsedState.resetTime || 0;
                             this.state.rawData = parsedState.rawData || '';
                             this.state.debugMode = parsedState.debugMode || false;
+                            this.state.bleLogs = parsedState.bleLogs || [];
 
                             // Гарантируем, что у каждой грани есть кастомное название
                             this.state.faces.forEach((face, index) => {
@@ -469,9 +530,11 @@
                             });
 
                             console.log('State loaded from localStorage:', parsedState);
+                            this.addLog('info', `Загружено состояние из localStorage (${this.state.bleLogs.length} записей лога)`);
                         }
                     } catch (e) {
                         console.error('Ошибка загрузки из localStorage:', e);
+                        this.addLog('error', `Ошибка загрузки из localStorage: ${e.message}`);
                     }
                 },
 
@@ -994,15 +1057,63 @@
                 },
 
                 /**
-                 * Заглушка для отправки логов
+                 * Форматирует логи для отправки
+                 * @returns {string} форматированные логи
                  */
-                shareLogs() {
-                    alert('Функция "Отправить логи" находится в разработке. Логи будут доступны в следующем обновлении.');
-                    console.log('Logs requested:', {
-                        state: this.state,
-                        storageAvailable: this.storageAvailable,
-                        currentTime: new Date().toLocaleString()
+                getFormattedLogs() {
+                    if (this.state.bleLogs.length === 0) {
+                        return 'Нет записей лога BLE.';
+                    }
+
+                    let logText = 'Cube Timer - Логи BLE подключения\n';
+                    logText += '==================================\n\n';
+                    logText += `Всего записей: ${this.state.bleLogs.length} (показаны последние ${this.MAX_LOG_ENTRIES})\n`;
+                    logText += `Текущее время: ${new Date().toLocaleString('ru-RU')}\n`;
+                    logText += `Статус BLE: ${this.state.bleConnected ? 'Подключено' : 'Не подключено'}\n`;
+
+                    if (this.state.bleDeviceName) {
+                        logText += `Устройство: ${this.state.bleDeviceName}\n`;
+                    }
+
+                    logText += '\n--- Записи лога ---\n\n';
+
+                    // Сортируем логи по времени (от старых к новым для удобства чтения)
+                    const sortedLogs = [...this.state.bleLogs].reverse();
+
+                    sortedLogs.forEach((log, index) => {
+                        const time = new Date(log.timestamp).toLocaleString('ru-RU');
+                        const level = log.level.toUpperCase();
+                        const message = log.message;
+
+                        logText += `${index + 1}. [${time}] ${level}: ${message}\n`;
                     });
+
+                    return logText;
+                },
+
+                /**
+                 * Отправляет логи BLE через Web Share API или копирует в буфер
+                 */
+                async shareLogs() {
+                    const logs = this.getFormattedLogs();
+
+                    if (navigator.share) {
+                        try {
+                            await navigator.share({
+                                title: 'Cube Timer BLE Logs',
+                                text: logs
+                            });
+                            this.addLog('info', 'Логи успешно отправлены через Web Share API');
+                            console.log('Logs shared successfully');
+                        } catch (error) {
+                            if (error.name !== 'AbortError') {
+                                this.copyToClipboard(logs, 'Логи BLE');
+                            }
+                        }
+                    } else {
+                        this.copyToClipboard(logs, 'Логи BLE');
+                    }
+
                     this.closeSharePanel();
                 },
 
@@ -1023,12 +1134,28 @@
                 },
 
                 /**
+                 * Возвращает цвет для уровня лога
+                 * @param {string} level - уровень лога
+                 * @returns {string} цвет CSS
+                 */
+                getLogColor(level) {
+                    switch (level) {
+                        case 'error': return '#ff6b6b';
+                        case 'warning': return '#ff9800';
+                        case 'success': return '#4caf50';
+                        case 'info': return '#2196f3';
+                        default: return '#666';
+                    }
+                },
+
+                /**
                  * Переключает режим отладки
                  */
                 toggleDebugMode() {
                     this.state.debugMode = !this.state.debugMode;
                     this.saveStateToLocalStorage();
                     console.log('Debug mode:', this.state.debugMode);
+                    this.addLog('info', `Режим отладки ${this.state.debugMode ? 'включен' : 'выключен'}`);
                 }
             }
         }).mount('#app');
