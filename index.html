@@ -629,23 +629,128 @@
                 },
 
                 /**
-                 * Генерирует CSV отчет о состоянии граней
+                 * Парсит строку даты в формате "dd.mm.yyyy, hh:mm:ss" в объект Date
+                 * @param {string} dateStr - строка с датой
+                 * @returns {Date|null} объект Date или null при ошибке
+                 */
+                parseDateString(dateStr) {
+                    if (!dateStr || dateStr === 0) return null;
+
+                    try {
+                        // Формат: "22.05.2024, 15:30:25"
+                        const parts = dateStr.split(/[\s,]+/);
+                        if (parts.length < 2) return null;
+
+                        const dateParts = parts[0].split('.');
+                        const timeParts = parts[1].split(':');
+
+                        if (dateParts.length !== 3 || timeParts.length !== 3) return null;
+
+                        return new Date(
+                            parseInt(dateParts[2], 10),  // год
+                            parseInt(dateParts[1], 10) - 1, // месяц (0-based)
+                            parseInt(dateParts[0], 10),  // день
+                            parseInt(timeParts[0], 10),  // часы
+                            parseInt(timeParts[1], 10),  // минуты
+                            parseInt(timeParts[2], 10)   // секунды
+                        );
+                    } catch (error) {
+                        console.error('Ошибка парсинга даты:', error);
+                        return null;
+                    }
+                },
+
+                /**
+                 * Вычисляет разницу между двумя датами в минутах
+                 * @param {Date} date1 - первая дата
+                 * @param {Date} date2 - вторая дата
+                 * @returns {number} разница в минутах
+                 */
+                getDateDiffInMinutes(date1, date2) {
+                    if (!date1 || !date2) return 0;
+                    const diffMs = Math.abs(date2 - date1);
+                    return Math.round(diffMs / (1000 * 60));
+                },
+
+                /**
+                 * Экранирует значение для CSV (оборачивает в кавычки если содержит запятую или кавычки)
+                 * @param {string} value - значение для экранирования
+                 * @returns {string} экранированное значение
+                 */
+                escapeCsvValue(value) {
+                    if (value === null || value === undefined) return '';
+                    const stringValue = String(value);
+
+                    // Если содержит запятую, кавычку или перенос строки - оборачиваем в кавычки
+                    if (/[,"\n\r]/.test(stringValue)) {
+                        return '"' + stringValue.replace(/"/g, '""') + '"';
+                    }
+                    return stringValue;
+                },
+
+                /**
+                 * Генерирует CSV отчет о состоянии граней в новом формате
+                 * Первая строка: заголовки
+                 * Вторая строка: данные
                  */
                 generateCsvReport() {
                     if (this.state.faces.length === 0) {
                         return 'Нет данных для отправки';
                     }
 
-                    let csv = 'Время последнего обновления,Время обнуления,Грань,Активное время грани\n';
+                    // Парсим даты для вычисления разницы
+                    const resetDate = this.parseDateString(this.state.resetTime);
+                    const extractionDate = this.parseDateString(this.state.extractionTime);
+                    const workTimeMinutes = this.getDateDiffInMinutes(resetDate, extractionDate);
 
-                    this.state.faces.forEach(face => {
-                        const name = face.customName || face.name;
-                        const isCurrent = face.id === this.state.currentFaceId ? '📍' : '';
-                        const resetTime = this.state.resetTime !== 0 ? this.state.resetTime : '';
-                        csv += `"${this.state.extractionTime}","${resetTime}","${isCurrent}${name}","${face.deltaValueIntStr}"\n`;
+                    // Создаем массив из 6 граней в порядке id
+                    const orderedFaces = [];
+                    for (let i = 1; i <= 6; i++) {
+                        const face = this.state.faces.find(f => f.id === i);
+                        orderedFaces.push(face || null);
+                    }
+
+                    // 1. Формируем заголовки
+                    const headers = [
+                        'Время обнуления',
+                        'Время последнего обновления',
+                        'Время работы (мин)'
+                    ];
+
+                    // Добавляем заголовки для граней
+                    orderedFaces.forEach((face, index) => {
+                        const faceNumber = index + 1;
+                        let faceName = `Грань${faceNumber}`;
+
+                        if (face) {
+                            const displayName = face.customName || face.name;
+                            faceName += `: ${displayName}`;
+                        }
+
+                        headers.push(faceName);
                     });
 
-                    return csv;
+                    // 2. Формируем данные
+                    const data = [
+                        this.state.resetTime !== 0 ? this.state.resetTime : '',
+                        this.state.extractionTime,
+                        workTimeMinutes
+                    ];
+
+                    // Добавляем данные для граней (активное время в минутах)
+                    orderedFaces.forEach(face => {
+                        if (face) {
+                            data.push(face.deltaValueInt);
+                        } else {
+                            data.push(''); // Пустая колонка для отсутствующей грани
+                        }
+                    });
+
+                    // 3. Собираем CSV строку
+                    const escapedHeaders = headers.map(h => this.escapeCsvValue(h));
+                    const escapedData = data.map(d => this.escapeCsvValue(d));
+
+                    return escapedHeaders.join(',') + '\n' + escapedData.join(',');
                 },
 
                 /**
