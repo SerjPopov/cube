@@ -114,6 +114,27 @@
             </div>
         </transition>
 
+        <!-- Панель "поделись" -->
+        <transition name="slide-up">
+            <div v-if="sharePanelVisible" class="settings-panel">
+                <div class="settings-panel-header">
+                    <h2>📤 Поделиться данными</h2>
+                    <button class="close-settings-btn" @click="closeSharePanel">✕</button>
+                </div>
+                <div class="settings-panel-body">
+                    <button class="settings-btn btn-share" @click="shareTxtReport" :disabled="state.faces.length === 0">
+                        📝 Отправить TXT
+                    </button>
+                    <button class="settings-btn btn-share" @click="shareCsvReport" :disabled="state.faces.length === 0">
+                        📊 Отправить CSV
+                    </button>
+                    <button class="settings-btn" @click="shareLogs">
+                        📋 Отправить логи
+                    </button>
+                </div>
+            </div>
+        </transition>
+
         <!-- Модальная форма редактирования (вынесена за пределы карточек) -->
         <transition name="modal-fade">
             <div v-if="editingFaceId !== null" class="modal-backdrop" @click="closeEditForm">
@@ -187,6 +208,7 @@
                     storageAvailable: false,
                     STORAGE_KEY: 'cube_timer_state',
                     settingsPanelVisible: false,
+                    sharePanelVisible: false, // Added missing property
                     editMode: false,
                     editingFaceId: null,
                     editFormData: {
@@ -476,6 +498,10 @@
                  */
                 toggleSettingsPanel() {
                     this.settingsPanelVisible = !this.settingsPanelVisible;
+                    // Закрываем панель "поделись" при открытии настроек
+                    if (this.settingsPanelVisible) {
+                        this.sharePanelVisible = false;
+                    }
                 },
 
                 /**
@@ -488,6 +514,24 @@
                         this.editMode = false;
                         this.closeEditForm();
                     }
+                },
+
+                /**
+                 * Открывает/закрывает панель "поделись"
+                 */
+                toggleSharePanel() {
+                    this.sharePanelVisible = !this.sharePanelVisible;
+                    // Закрываем панель настроек при открытии "поделись"
+                    if (this.sharePanelVisible) {
+                        this.settingsPanelVisible = false;
+                    }
+                },
+
+                /**
+                 * Закрывает панель "поделись"
+                 */
+                closeSharePanel() {
+                    this.sharePanelVisible = false;
                 },
 
                 /**
@@ -547,6 +591,144 @@
                     }
 
                     this.closeEditForm();
+                },
+
+                /**
+                 * Генерирует текстовый отчет о состоянии граней
+                 */
+                generateTxtReport() {
+                    if (this.state.faces.length === 0) {
+                        return 'Нет данных для отправки';
+                    }
+
+                    let report = 'Cube Timer - Отчет\n';
+                    report += '==================\n\n';
+
+                    const currentFace = this.getCurrentFace();
+                    if (currentFace) {
+                        report += `📍 Текущая грань: ${this.getCurrentFaceDisplayName()}\n`;
+                        report += `   Время: ${currentFace.deltaValueIntStr}\n`;
+                    }
+
+                    report += `🕒 Время последнего обновления: ${this.state.extractionTime}\n`;
+
+                    if (this.state.resetTime !== 0) {
+                        report += `🔄 Время обнуления: ${this.state.resetTime}\n`;
+                    }
+
+                    report += '\n📊 Грани:\n';
+                    this.state.faces.forEach(face => {
+                        const isCurrent = face.id === this.state.currentFaceId ? '📍 ' : '  ';
+                        report += `${isCurrent}${face.customName || face.name}: ${face.deltaValueIntStr}\n`;
+                        if (this.state.debugMode) {
+                            report += `    (ID: ${face.id}, Значение: ${face.value})\n`;
+                        }
+                    });
+
+                    return report;
+                },
+
+                /**
+                 * Генерирует CSV отчет о состоянии граней
+                 */
+                generateCsvReport() {
+                    if (this.state.faces.length === 0) {
+                        return 'Нет данных для отправки';
+                    }
+
+                    let csv = 'Грань,Название,Текущее значение,Дельта\n';
+
+                    this.state.faces.forEach(face => {
+                        const name = face.customName || face.name;
+                        const isCurrent = face.id === this.state.currentFaceId ? '📍' : '';
+                        csv += `"${isCurrent}${name}","${face.value}","${face.deltaValueIntStr}"\n`;
+                    });
+
+                    // Добавляем информацию о времени
+                    csv += '\nВремя последнего обновления\n';
+                    csv += `"${this.state.extractionTime}"\n`;
+
+                    if (this.state.resetTime !== 0) {
+                        csv += '\nВремя обнуления\n';
+                        csv += `"${this.state.resetTime}"\n`;
+                    }
+
+                    return csv;
+                },
+
+                /**
+                 * Отправляет отчет в формате TXT через Web Share API
+                 */
+                async shareTxtReport() {
+                    const report = this.generateTxtReport();
+
+                    if (navigator.share) {
+                        try {
+                            await navigator.share({
+                                title: 'Cube Timer Report',
+                                text: report
+                            });
+                            console.log('TXT report shared successfully');
+                        } catch (error) {
+                            if (error.name !== 'AbortError') {
+                                this.copyToClipboard(report, 'TXT');
+                            }
+                        }
+                    } else {
+                        this.copyToClipboard(report, 'TXT');
+                    }
+
+                    this.closeSharePanel();
+                },
+
+                /**
+                 * Отправляет отчет в формате CSV через Web Share API
+                 */
+                async shareCsvReport() {
+                    const report = this.generateCsvReport();
+
+                    if (navigator.share) {
+                        try {
+                            await navigator.share({
+                                title: 'Cube Timer Report (CSV)',
+                                text: report
+                            });
+                            console.log('CSV report shared successfully');
+                        } catch (error) {
+                            if (error.name !== 'AbortError') {
+                                this.copyToClipboard(report, 'CSV');
+                            }
+                        }
+                    } else {
+                        this.copyToClipboard(report, 'CSV');
+                    }
+
+                    this.closeSharePanel();
+                },
+
+                /**
+                 * Копирует текст в буфер обмена и показывает сообщение
+                 */
+                copyToClipboard(text, format) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        alert(`${format} отчет скопирован в буфер обмена!`);
+                    }).catch(err => {
+                        console.error('Ошибка копирования в буфер:', err);
+                        alert('Не удалось скопировать в буфер обмена. Скопируйте вручную:\n\n' + text);
+                    });
+                },
+
+                /**
+                 * Заглушка для отправки логов
+                 */
+                shareLogs() {
+                    alert('Функция "Отправить логи" находится в разработке. Логи будут доступны в следующем обновлении.');
+                    console.log('Logs requested:', {
+                        state: this.state,
+                        storageAvailable: this.storageAvailable,
+                        currentTime: new Date().toLocaleString()
+                    });
+                    this.closeSharePanel();
                 },
 
                 /**
