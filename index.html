@@ -619,7 +619,7 @@
                     report += '\n📊 Грани:\n';
                     this.state.faces.forEach(face => {
                         const isCurrent = face.id === this.state.currentFaceId ? '📍 ' : '  ';
-                        report += `${isCurrent}${face.customName || face.name}: ${face.deltaValueIntStr}\n`;
+                        report += `${isCurrent}${face.id} - ${face.customName || face.name}: ${face.deltaValueIntStr}\n`;
                         if (this.state.debugMode) {
                             report += `    (ID: ${face.id}, Значение: ${face.value})\n`;
                         }
